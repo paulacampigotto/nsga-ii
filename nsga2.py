@@ -5,15 +5,30 @@ import numpy as np
 
 TAM_POP = 20
 
+def peso(carteira,i):
+    soma = 0
+    for j in range(len(carteira)):
+        soma+=carteira[j][1]
+
+    if(i == len(carteira)):
+        return 1 - soma
+    else:
+        p = rand.random()
+        while(p > soma(carteira)):
+            p = rand.random()
+        return p
+
+
 def populacao_inicial():
     populacao = []
     for j in range(TAM_POP):
         carteira = []
         for i in range(9):
-            a = (random.randint(0,59), random.random()) ##### satisfazer a soma dos pesos = 1
+            a = (random.randint(0,59), peso(carteira,i)) ##### satisfazer a soma dos pesos = 1
             carteira.append(a)
         populacao.append(carteira)
     return populacao
+
 
 def soma(retornos, indice):
     s = 0
@@ -24,7 +39,8 @@ def soma(retornos, indice):
 def retorno(ativo):
     retorno = []
     for i in range(len(ativo) -1):
-        retorno.append(( ativo[i+1] - ativo[i] ) / ativo[i])
+        if(ativo[i] != 0):
+            retorno.append(( ativo[i+1] - ativo[i] ) / ativo[i])
     return retorno
 
 def cvar(ativo):
@@ -42,7 +58,7 @@ def cvar(ativo):
 
     return [cvar95, cvar99, cvar999]
 
-onlyfiles = [f for f in listdir("/home/paula/Documents/IC/nsga-2/ativos") if isfile(join("/home/paula/Documents/IC/nsga-2/ativos", f))]
+onlyfiles = [f for f in listdir("/home/paula/Documents/IC/nsga-ii/ativos") if isfile(join("/home/paula/Documents/IC/nsga-ii/ativos", f))]
 
 it = 0
 ativos = np.empty((len(onlyfiles), 996)) # 996 -> numero de dias
@@ -62,16 +78,18 @@ for i in(onlyfiles): # linha: ativos, coluna: cotações
 
 
 pop = populacao_inicial()
+print(pop)
 carteira = []
 for i in range(len(pop)):
-    carteira_aux = []
+    retorno_carteira = 0
+    cvar999_carteira = 0
     for j in range(len(pop[i])):
         ativo = pop[i][j][0]
         peso = pop[i][j][1]
-
-        razao = ( ( soma(ativos[ativo],len(ativos)-1) ) / cvar(ativos[ativo])[2] ) * peso
-        carteira_aux.append(razao)
-    carteira.append(carteira_aux)
-    #calcular a razao risco/retorno da carteira, considerando as proporções
+        retorno_ativo = soma(ativos[ativo],len(ativos)-1)
+        cvar999_ativo = cvar(ativos[ativo])[2] * peso
+        retorno_carteira+=retorno_ativo * peso
+        cvar999_carteira+=cvar999_ativo * peso
+    carteira.append((retorno_carteira,cvar999_carteira))
 
 print(carteira)
