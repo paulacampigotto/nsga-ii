@@ -2,20 +2,25 @@ from os import listdir
 from os.path import isfile, join
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
-TAM_POP = 20
+
+TAM_POP = 50
+CARDINALIDADE = 9
 
 def peso(carteira,i):
     soma = 0
     for j in range(len(carteira)):
         soma+=carteira[j][1]
 
-    if(i == len(carteira)):
-        return 1 - soma
+    if(i == CARDINALIDADE):
+        return 1- soma
+    elif(i==0):
+        return random.random()
     else:
-        p = rand.random()
-        while(p > soma(carteira)):
-            p = rand.random()
+        p = random.random()
+        while(p > soma):
+            p = random.random()
         return p
 
 
@@ -86,10 +91,20 @@ for i in range(len(pop)):
     for j in range(len(pop[i])):
         ativo = pop[i][j][0]
         peso = pop[i][j][1]
-        retorno_ativo = soma(ativos[ativo],len(ativos)-1)
+        retorno_ativo = sum(retorno(ativos[ativo]))/len(ativos[ativo])
+        # if(i==0 and j==0):
+        #     print("-----------")
+        #     print(retorno(ativos[ativo]))
+        #     print(sum(retorno(ativos[ativo])))
+        #     print("-----------")
         cvar999_ativo = cvar(ativos[ativo])[2] * peso
         retorno_carteira+=retorno_ativo * peso
         cvar999_carteira+=cvar999_ativo * peso
-    carteira.append((retorno_carteira,cvar999_carteira))
+    carteira.append((cvar999_carteira, retorno_carteira))
 
 print(carteira)
+
+zip(*carteira)
+plt.scatter(*zip(*carteira))
+plt.axis([ -5, 0, -0.01, 0.01])
+plt.show()
