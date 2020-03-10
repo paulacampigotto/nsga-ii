@@ -109,6 +109,22 @@ def crossover(carteiraRisRet):
         novaPop.append(filho2)
     return novaPop
 
+def mutacao(novaPop):
+    for i in novaPop:
+        random = random.random()
+        flag = False
+        if(random < 0.1):
+            while(flag == False):
+                randInd1 = random.randint(0,len(novaPop)-1)
+                randInd2 = random.randint(0,len(novaPop)-1)
+                randomsum = 1-random
+                randomAtivo = novaPop[randInd1][1]
+                if novaPop[randInd2][1] - random > 0.0:
+                    novaPop[randInd1][1] = random
+                    novaPop[randInd2][1] = random - novaPop[randInd2][1] + randomsum
+                    flag = True
+
+
 def eleicao():
     indRisRet = []
     for i in risRetPop:
@@ -119,7 +135,7 @@ def eleicao():
 def otimiza(populacao):
      # print(eleicao())
      novaPop = crossover(eleicao())
-#     mutacao()
+#    novaPop = mutacao(novaPop)
      return novaPop
 
 
