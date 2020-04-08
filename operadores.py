@@ -1,45 +1,69 @@
 from globais import *
 from aux import *
+from nsga2 import *
 import random
+import copy
 from math import ceil
 
-def crossover(pop):
+def crossover():
+    pop = copy.copy(eleicao(populacao))
     novaPop = []
     #seleciona os pais
     for i in range(ceil(TAM_POP/2)):
         while True:
             probabilidade = random.random()
-            carteira = random.randint(0,len(pop)-1)
-            if(probabilidade <= (pop[carteira][1]/pop[0][1])):
-                indicePai1 = pop[carteira]
-                pop.remove(pop[carteira]) #Estamos removendo a carteira da população geral
+            carteira = pop[random.randint(0,TAM_POP-1)]
+            if(probabilidade <= (carteira.fitness()/pop[TAM_POP-1].fitness())):
+                # print("primeira carteira: ")
+                # carteira.printCarteira()
+                pai1 = copy.copy(carteira)
                 while True:
                     probabilidade = random.random()
-                    carteira = random.randint(0,len(pop)-1)
-                    if(probabilidade <= (pop[carteira][1]/pop[0][1])):
-                        indicePai2 = pop[carteira]
-                        pop.remove(pop[carteira]) #Estamos removendo a carteira da população geral
-                        break
+                    carteira = pop[random.randint(0,TAM_POP-1)]
+                    if(probabilidade <= (carteira.fitness()/pop[TAM_POP-1].fitness())):
+                        if(pai1.getId() != carteira.getId()):
+                            # print("segunda carteira: ")
+                            # carteira.printCarteira()
+                            pai2 = copy.copy(carteira)
+                            break
                 break
-
+                
         # cria os filhos
 
-
-        filho1 = populacao[indicePai1[0]]
-        filho2 = populacao[indicePai2[0]]
-
+        ativosFilho1 = []
+        ativosFilho2 = []
 
         probabilidade = random.random()
         for j in range(CARDINALIDADE):
-            filho1.setProporcao(j, (filho1.getProporcao(j) * probabilidade + filho2.getProporcao(j) * (1-probabilidade)))
-            filho2.setProporcao(j, (filho2.getProporcao(j) * probabilidade + filho1.getProporcao(j) * (1-probabilidade)))
-       
-        novaPop.append(filho1)
-        novaPop.append(filho2)
+            ativosFilho1.append((pai1.getAtivos()[j][0],pai1.getProporcao(j) * probabilidade + pai2.getProporcao(j) * (1-probabilidade)))
+            ativosFilho2.append((pai2.getAtivos()[j][0],pai2.getProporcao(j) * probabilidade + pai1.getProporcao(j) * (1-probabilidade)))
         
+        # print(ativosFilho1)
+        filho1 = Carteira(ativosFilho1) 
+        filho2 = Carteira(ativosFilho2) 
+        print("pai1 ")
+        pai1.printCarteira()
+        print("pai2")
+        pai2.printCarteira()
+        print("filho1 ")
+        filho1.printCarteira()
+        print("filho2")
+        filho2.printCarteira()
+
+        pop.append(filho1)
+        pop.append(filho2)
+    
+    pop = eleicao(pop).copy()
+
+
+
+    for i in range(len(pop)-1, (len(pop)//2)-1, -1):
+        novaPop.append(pop[i])
+
+    # for i in novaPop:
+    #     print(i.printCarteira())
 
     return novaPop
-
 
 def mutacao(novaPop):
     for i in novaPop:
@@ -57,10 +81,9 @@ def mutacao(novaPop):
                     flag = True
 
 
-# eleicao() = lista de (indice da carteira, retorno sobre risco)
-def eleicao():
-    global populacao
-    populacaoOrdenada = []
-    for i in populacao:
-        populacaoOrdenada.append((i.getId(),i.getTaxaRetornoRisco())) #retorno sobre risco
-    return sorted(populacaoOrdenada,key=getKey)
+def eleicao(pop):
+    pop_ord = sorted(pop,key=getKey)
+    return pop_ord
+
+
+

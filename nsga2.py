@@ -42,11 +42,10 @@ class Ativo:
 class Carteira:
     idCarteira = itertools.count()
     def __init__(self, ativos):
-        self.ativos = ativos # ativos = (Ativo, proporção)
+        self.ativos = ativos.copy() # ativos = (Ativo, proporção)
         self.risco = self.defineRisco()
         self.retorno = self.defineRetorno()
         self.id = next(Carteira.idCarteira)
-        self.taxaRetornoRisco = self.defineTaxa()
 
     def getId(self):
         return self.id
@@ -75,17 +74,20 @@ class Carteira:
     def getRetorno(self):
         return self.retorno
 
-    def defineTaxa(self):
-        return self.retorno/self.risco
-
-    def getTaxaRetornoRisco(self):
-        return self.taxaRetornoRisco
-        
     def getProporcao(self, index):
         return self.ativos[index][1]
 
     def setProporcao(self, index, proporcao):
         self.ativos[index] = (self.ativos[index][0], proporcao)
+
+    def printCarteira(self):
+        for i in self.ativos:
+            print(i[0].getCodigo(), round(i[1],4), self.fitness())
+
+    def fitness(self):
+        return self.retorno/self.risco
+    
+            
 
 def inicializa():
     
@@ -103,7 +105,8 @@ def inicializa():
                 if(aux != 'Adj Close' and aux != 'null' and aux != "\n"):
                     adj_close = float(aux)
                     listaCotacoes.append(adj_close)
-            listaAtivos.append(Ativo(i,listaCotacoes))
+            codigoAtivo = i[:5]
+            listaAtivos.append(Ativo(codigoAtivo,listaCotacoes))
 
 
     #calcula o risco e o retorno de cada ativo e atualiza os valores de listaAtivos
@@ -145,22 +148,30 @@ def cvar(ativo):
     cvar99 = (1/((1-(99/100))*total_count)*soma_aux(ret_ord, round((1-(99/100))*total_count)))
     cvar999 = (1/((1-(99.9/100))*total_count)*soma_aux(ret_ord, round((1-(99.9/100))*total_count)))
 
-    return [cvar95, cvar99, cvar999]
+    return [abs(cvar95), abs(cvar99), abs(cvar999)]
 
 def otimiza():
     global populacao
-    novaPop = crossover(eleicao())
-#   novaPop = mutacao(novaPop)
-    # return novaPop
+    novaPop = crossover()
+    populacao = novaPop.copy()
+    #   novaPop = mutacao(populacao)
+    #   populacao = novaPop.copy()
 
 def main():
 
     inicializa()
     populacao_inicial()
-
     
+
     for i in range(ITERACOES):
-      pop = otimiza()
+        otimiza()
+        # for i in populacao:
+        #     i.printCarteira()
+        #     print()
+        # print()
+        # print()
+        
+
 
 if __name__ == "__main__":
     main()

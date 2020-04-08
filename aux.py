@@ -11,7 +11,7 @@ def pesoProporcional(carteira,i):
         return 1- soma
 
     elif(i==0):
-        p = random.uniform(0, 0.4)
+        p = random.uniform(0, 0.2)
         return p
 
     else:
@@ -36,4 +36,4 @@ def soma_aux(retorno, indice):
     return s
 
 def getKey(x):
-    return x[1]
+    return x.fitness()
