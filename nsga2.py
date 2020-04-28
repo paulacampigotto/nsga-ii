@@ -82,14 +82,23 @@ class Carteira:
 
     def printCarteira(self):
         for i in self.ativos:
-            print(i[0].getCodigo(), round(i[1],4), self.fitness())
+            print(i[0].getCodigo(), round(i[1],4))
 
     def fitness(self):
         return self.retorno/self.risco
-    
-            
 
-def inicializa():
+    def getIndexPeloAtivo(self, ativo):
+        j = 0
+        for i in self.getAtivos():
+            if(i == ativo):
+                return j
+            j+=1
+
+    def setAtivoPeloIndex(self,index, ativo):
+        self.ativos[index] = ativo
+                
+
+def inicializa():    
     
     global listaAtivos
 
@@ -153,9 +162,8 @@ def cvar(ativo):
 def otimiza():
     global populacao
     novaPop = crossover()
-    populacao = novaPop.copy()
-    #   novaPop = mutacao(populacao)
-    #   populacao = novaPop.copy()
+    populacaoMutada = mutacao(novaPop)
+    populacao = populacaoMutada.copy()
 
 def main():
 
@@ -165,18 +173,15 @@ def main():
 
     for i in range(ITERACOES):
         otimiza()
-        # for i in populacao:
-        #     i.printCarteira()
-        #     print()
-        # print()
-        # print()
-        
+        for i in populacao:
+            i.printCarteira()
+            print()
+        print()
+        print()
+    
 
+        
 
 if __name__ == "__main__":
     main()
 
-# zip(*risRetPop)
-# plt.scatter(*zip(*risRetPop))
-# plt.axis([ -5, 0, -0.01, 0.01])
-# plt.show()

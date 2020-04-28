@@ -14,16 +14,12 @@ def crossover():
             probabilidade = random.random()
             carteira = pop[random.randint(0,TAM_POP-1)]
             if(probabilidade <= (carteira.fitness()/pop[TAM_POP-1].fitness())):
-                # print("primeira carteira: ")
-                # carteira.printCarteira()
                 pai1 = copy.copy(carteira)
                 while True:
                     probabilidade = random.random()
                     carteira = pop[random.randint(0,TAM_POP-1)]
                     if(probabilidade <= (carteira.fitness()/pop[TAM_POP-1].fitness())):
                         if(pai1.getId() != carteira.getId()):
-                            # print("segunda carteira: ")
-                            # carteira.printCarteira()
                             pai2 = copy.copy(carteira)
                             break
                 break
@@ -38,47 +34,36 @@ def crossover():
             ativosFilho1.append((pai1.getAtivos()[j][0],pai1.getProporcao(j) * probabilidade + pai2.getProporcao(j) * (1-probabilidade)))
             ativosFilho2.append((pai2.getAtivos()[j][0],pai2.getProporcao(j) * probabilidade + pai1.getProporcao(j) * (1-probabilidade)))
         
-        # print(ativosFilho1)
         filho1 = Carteira(ativosFilho1) 
         filho2 = Carteira(ativosFilho2) 
-        print("pai1 ")
-        pai1.printCarteira()
-        print("pai2")
-        pai2.printCarteira()
-        print("filho1 ")
-        filho1.printCarteira()
-        print("filho2")
-        filho2.printCarteira()
 
         pop.append(filho1)
         pop.append(filho2)
     
     pop = eleicao(pop).copy()
 
-
+    #novaPop contém os N (tamanho da população) melhores portfólios
 
     for i in range(len(pop)-1, (len(pop)//2)-1, -1):
         novaPop.append(pop[i])
 
-    # for i in novaPop:
-    #     print(i.printCarteira())
-
     return novaPop
 
-def mutacao(novaPop):
-    for i in novaPop:
-        randomm = random.random()
-        flag = False
-        if(randomm < 0.1):
-            while(flag == False):
-                randInd1 = random.randint(0,len(novaPop)-1)
-                randInd2 = random.randint(0,len(novaPop)-1)
-                randomsum = 1-randomm
-                randomAtivo = novaPop[randInd1][1]
-                if novaPop[randInd2][1] - randomm > 0.0:
-                    novaPop[randInd1][1] = randomm
-                    novaPop[randInd2][1] = randomm - novaPop[randInd2][1] + randomsum
-                    flag = True
+def mutacao(populacao):
+    for carteira in populacao:
+        index1 = 0
+        for ativo in carteira.getAtivos():
+            probabilidade = random.random()
+            if (probabilidade <= 0.1):
+                r = random.uniform(0,ativo[1])
+                novoAtivo1 = random.choice(listaAtivos)
+                carteira.setAtivoPeloIndex(index1, (novoAtivo1, ativo[1]-r))
+                novoAtivo2 = random.choice(carteira.getAtivos())
+                index2 = carteira.getIndexPeloAtivo(novoAtivo2)
+                carteira.setAtivoPeloIndex(index2, (novoAtivo2[0], novoAtivo2[1]+r))
+            index1+=1
+    return populacao
+
 
 
 def eleicao(pop):
