@@ -5,17 +5,19 @@ import random
 import copy
 from math import ceil
 
-def crossover():
+def crossover(populacao):
     pop = copy.copy(eleicao(populacao))
     novaPop = []
     #seleciona os pais
     for i in range(ceil(TAM_POP/2)):
         while True:
+            print("1")
             probabilidade = random.random()
             carteira = pop[random.randint(0,TAM_POP-1)]
             if(probabilidade <= (carteira.fitness()/pop[TAM_POP-1].fitness())):
                 pai1 = copy.copy(carteira)
                 while True:
+                    print("2")
                     probabilidade = random.random()
                     carteira = pop[random.randint(0,TAM_POP-1)]
                     if(probabilidade <= (carteira.fitness()/pop[TAM_POP-1].fitness())):
@@ -53,17 +55,20 @@ def mutacao(populacao):
     for carteira in populacao:
         index1 = 0
         for ativo in carteira.getAtivos():
-            probabilidade = random.random()
-            if (probabilidade <= 0.1):
-                r = random.uniform(0,ativo[1])
-                novoAtivo1 = random.choice(listaAtivos)
-                carteira.setAtivoPeloIndex(index1, (novoAtivo1, ativo[1]-r))
-                novoAtivo2 = random.choice(carteira.getAtivos())
-                index2 = carteira.getIndexPeloAtivo(novoAtivo2)
-                carteira.setAtivoPeloIndex(index2, (novoAtivo2[0], novoAtivo2[1]+r))
+            probabili = random.random()
+            if (probabili <= 0.1):
+                prob = random.random() # mutar proporção ou ativo
+                if(prob < 0.5):
+                    r = random.uniform(0,ativo[1]) #gera um valor r aleatório para ser subtraído da proporção atual
+                    carteira.setAtivoPeloIndex(index1, (ativo[0], ativo[1]-r))
+                    novoAtivo2 = random.choice(carteira.getAtivos())
+                    index2 = carteira.getIndexPeloAtivo(novoAtivo2)
+                    carteira.setAtivoPeloIndex(index2, (novoAtivo2[0], novoAtivo2[1]+r))
+                else:
+                    novoAtivo1 = random.choice(listaAtivos) #gera um ativo novoAtivo1 para substituir o ativo atual
+                    carteira.setAtivoPeloIndex(index1, (novoAtivo1, ativo[1]))
             index1+=1
     return populacao
-
 
 
 def eleicao(pop):

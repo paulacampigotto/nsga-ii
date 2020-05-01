@@ -37,3 +37,8 @@ def soma_aux(retorno, indice):
 
 def getKey(x):
     return x.fitness()
+
+def printPopulacao(pop):
+    for carteira in pop:
+        carteira.printCarteira()
+        print()

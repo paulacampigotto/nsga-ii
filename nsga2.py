@@ -83,6 +83,7 @@ class Carteira:
     def printCarteira(self):
         for i in self.ativos:
             print(i[0].getCodigo(), round(i[1],4))
+        print("Fitness: " + str(self.fitness()))
 
     def fitness(self):
         return self.retorno/self.risco
@@ -149,39 +150,64 @@ def cvar(ativo):
     ret_ord.sort()
     total_count = len(ret_ord)
 
-    var95 = ret_ord[round((1-(95/100))*total_count)]
-    var99 = ret_ord[round((1-(99/100))*total_count)]
-    var999 = ret_ord[round((1-(99.9/100))*total_count)]
+    var95 = ret_ord[ceil((1-(95/100))*total_count)]
+    var99 = ret_ord[ceil((1-(99/100))*total_count)]
+    var999 = ret_ord[ceil((1-(99.9/100))*total_count)]
 
-    cvar95 = (1/((1-(95/100))*total_count)*soma_aux(ret_ord, round((1-(95/100))*total_count)))
-    cvar99 = (1/((1-(99/100))*total_count)*soma_aux(ret_ord, round((1-(99/100))*total_count)))
-    cvar999 = (1/((1-(99.9/100))*total_count)*soma_aux(ret_ord, round((1-(99.9/100))*total_count)))
+    cvar95 = (abs(1/((1-(95/100))*total_count))*soma_aux(ret_ord, round((1-(95/100))*total_count)))
+    cvar99 = (abs(1/((1-(99/100))*total_count))*soma_aux(ret_ord, round((1-(99/100))*total_count)))
+    cvar999 = (abs(1/((1-(99.9/100))*total_count))*soma_aux(ret_ord, round((1-(99.9/100))*total_count)))
 
-    return [abs(cvar95), abs(cvar99), abs(cvar999)]
+    return [abs(cvar95), abs(cvar99),  abs(cvar999)]
 
 def otimiza():
     global populacao
-    novaPop = crossover()
-    populacaoMutada = mutacao(novaPop)
-    populacao = populacaoMutada.copy()
+    popCrossover = crossover(populacao)
+    populacaoMutacao = mutacao(popCrossover)
+    populacao = populacaoMutacao.copy()
 
 def main():
 
     inicializa()
     populacao_inicial()
     
+    #populacoes = []
+    #printPopulacao(populacao)
+
+    x1 = []
+    y1 = []
+    for carteira in populacao:
+        x1.append(carteira.getRisco())
+        y1.append(carteira.getRetorno())
 
     for i in range(ITERACOES):
         otimiza()
-        for i in populacao:
-            i.printCarteira()
-            print()
-        print()
-        print()
-    
 
+    #rint("------------------------------------")
+    #printPopulacao(populacao)
+    
+    x2 = []
+    y2 = []
+    for carteira in populacao:
+        x2.append(carteira.getRisco())
+        y2.append(carteira.getRetorno())
+
+    
+    plt.scatter(x1, y1)
+    plt.axis([min(x1), max(x1), min(y1), max(y1)])
+    plt.xlabel('Risco')
+    plt.ylabel('Retorno')
+    plt.savefig('paretoInicial.png')
+    plt.show()
         
+    plt.scatter(x2, y2)
+    plt.axis([min(x2), max(x2), min(y2), max(y2)])
+    plt.xlabel('Risco')
+    plt.ylabel('Retorno')
+    plt.savefig('paretoFinal.png')
+    plt.show()
 
 if __name__ == "__main__":
     main()
+
 
