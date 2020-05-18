@@ -14,12 +14,16 @@ def crossover(populacao):
             print("1")
             probabilidade = random.random()
             carteira = pop[random.randint(0,TAM_POP-1)]
+            print("fitness: " + str(carteira.fitness()))
+            print("denominador: " + str(pop[TAM_POP-1].fitness()))
             if(probabilidade <= (carteira.fitness()/pop[TAM_POP-1].fitness())):
                 pai1 = copy.copy(carteira)
                 while True:
                     print("2")
                     probabilidade = random.random()
                     carteira = pop[random.randint(0,TAM_POP-1)]
+                    print("prob:" + str(probabilidade))
+                    print("div: " + str(carteira.fitness()/pop[TAM_POP-1].fitness()))
                     if(probabilidade <= (carteira.fitness()/pop[TAM_POP-1].fitness())):
                         if(pai1.getId() != carteira.getId()):
                             pai2 = copy.copy(carteira)
@@ -46,10 +50,10 @@ def crossover(populacao):
 
     #novaPop contém os N (tamanho da população) melhores portfólios
 
-    for i in range(len(pop)-1, (len(pop)//2)-1, -1):
-        novaPop.append(pop[i])
+    # for i in range(len(pop)-1, 0, -1):
+    #     novaPop.append(pop[i])
 
-    return novaPop
+    return pop
 
 def mutacao(populacao):
     for carteira in populacao:
@@ -67,6 +71,7 @@ def mutacao(populacao):
                 else:
                     novoAtivo1 = random.choice(listaAtivos) #gera um ativo novoAtivo1 para substituir o ativo atual
                     carteira.setAtivoPeloIndex(index1, (novoAtivo1, ativo[1]))
+
             index1+=1
     return populacao
 
@@ -74,6 +79,12 @@ def mutacao(populacao):
 def eleicao(pop):
     pop_ord = sorted(pop,key=getKey)
     return pop_ord
+
+def filtragem(pop):
+    p = pop/2
+    for i in range(p):
+        if i <= 
+    fronteiras = ordenação_não_dom(fitness)
 
 
 

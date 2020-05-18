@@ -7,6 +7,7 @@ import random
 from os import listdir
 from os.path import isfile, join
 from pprint import pprint
+import numpy as np
 
 class Ativo:
     idAtivo = itertools.count()
@@ -83,9 +84,10 @@ class Carteira:
     def printCarteira(self):
         for i in self.ativos:
             print(i[0].getCodigo(), round(i[1],4))
-        print("Fitness: " + str(self.fitness()))
+        # print("Fitness: " + str(self.fitness()))
 
     def fitness(self):
+        print("ret: " + str(self.retorno) + " risco: " + str(self.risco))
         return self.retorno/self.risco
 
     def getIndexPeloAtivo(self, ativo):
@@ -125,6 +127,9 @@ def inicializa():
         i.setRisco(ris)
         ret = sum(retorno(i.getCotacoes()))/len(i.getCotacoes())
         i.setRetorno(ret)
+    
+    for i in listaAtivos:
+        print(i.getRetorno())
 
 def populacao_inicial():
     global populacao
@@ -138,11 +143,11 @@ def populacao_inicial():
 def retorno(ativo):
     retorno = []
     for i in range(len(ativo) -1):
-        if(ativo[i] != 0):
-            retorno.append(( ativo[i+1] - ativo[i] ) / ativo[i])
-
-        else:
-            retorno.append(( ativo[i+1] - ativo[i] ) / 0.001)
+        #if(ativo[i] != 0):
+        #retorno.append(np.log(ativo[i+1] / (ativo[i])))
+        retorno.append((ativo[i+1] - ativo[i]) / ativo[i])
+        #else:
+        #    retorno.append(( ativo[i+1] - ativo[i] ) / 0.001)
     return retorno
 
 def cvar(ativo):
@@ -154,17 +159,18 @@ def cvar(ativo):
     var99 = ret_ord[ceil((1-(99/100))*total_count)]
     var999 = ret_ord[ceil((1-(99.9/100))*total_count)]
 
-    cvar95 = (abs(1/((1-(95/100))*total_count))*soma_aux(ret_ord, round((1-(95/100))*total_count)))
-    cvar99 = (abs(1/((1-(99/100))*total_count))*soma_aux(ret_ord, round((1-(99/100))*total_count)))
-    cvar999 = (abs(1/((1-(99.9/100))*total_count))*soma_aux(ret_ord, round((1-(99.9/100))*total_count)))
+    cvar95 = abs((1/((1-(95/100))*total_count))*soma_aux(ret_ord, ceil((1-(95/100))*total_count)))
+    cvar99 = abs((1/((1-(99/100))*total_count))*soma_aux(ret_ord, ceil((1-(99/100))*total_count)))
+    cvar999 = abs((1/((1-(99.9/100))*total_count))*soma_aux(ret_ord, ceil((1-(99.9/100))*total_count)))
 
-    return [abs(cvar95), abs(cvar99),  abs(cvar999)]
+    return [(cvar95), (cvar99), (cvar999)]
 
 def otimiza():
     global populacao
     popCrossover = crossover(populacao)
     populacaoMutacao = mutacao(popCrossover)
-    populacao = populacaoMutacao.copy()
+    popfiltragem = filtragem(populacaoMutacao)
+    populacao = popfiltragem.copy()
 
 def main():
 
