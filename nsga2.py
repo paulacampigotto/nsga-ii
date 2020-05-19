@@ -169,16 +169,16 @@ def otimiza():
     global populacao
     popCrossover = crossover(populacao)
     populacaoMutacao = mutacao(popCrossover)
-    popfiltragem = filtragem(populacaoMutacao)
-    populacao = popfiltragem.copy()
+    populacao = fnds(populacaoMutacao)
+    #popfiltragem = filtragem(populacaoMutacao)
+    #populacao = popfiltragem.copy()
 
 def main():
 
     inicializa()
+    print("oi")
     populacao_inicial()
     
-    #populacoes = []
-    #printPopulacao(populacao)
 
     x1 = []
     y1 = []
