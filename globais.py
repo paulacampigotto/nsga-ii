@@ -1,5 +1,5 @@
-TAM_POP = 500
+TAM_POP = 10
 CARDINALIDADE = 9
-ITERACOES = 1000
+ITERACOES = 2
 listaAtivos = []
 populacao = []

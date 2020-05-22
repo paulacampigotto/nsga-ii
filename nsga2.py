@@ -47,6 +47,38 @@ class Carteira:
         self.risco = self.defineRisco()
         self.retorno = self.defineRetorno()
         self.id = next(Carteira.idCarteira)
+        self.contador_n = 0 # contador_n utilizado no nds()
+        self.rank = 0
+        self.dist_crowd = 0
+        self.rank = 0
+        self.dominadas = [] # lista s de carteiras dominadas no nds()
+
+    def getDominadas(self):
+        return self.dominadas
+    
+    def setDominadas(self, lista):
+        self.dominadas = lista
+    
+    def appendDominadas(self, x):
+        self.dominadas.append(x)
+
+    def setRank(self, valor):
+        self.rank = valor
+
+    def getRank(self):
+        return self.rank
+
+    def setDist_crowd(self, valor):
+        self.dist_crowd = valor
+
+    def getDist_crowd(self):
+        return self.dist_crowd
+
+    def setContador_n(self, valor):
+        self.contador_n = valor
+
+    def getContador_n(self):
+        return self.contador_n
 
     def getId(self):
         return self.id
@@ -169,15 +201,17 @@ def otimiza():
     global populacao
     popCrossover = crossover(populacao)
     populacaoMutacao = mutacao(popCrossover)
-    populacao = fnds(populacaoMutacao)
-    #popfiltragem = filtragem(populacaoMutacao)
-    #populacao = popfiltragem.copy()
+    popfiltragem = filtragem(populacaoMutacao)
+    populacao = popfiltragem.copy()
 
 def main():
 
+    print("..")
     inicializa()
-    print("oi")
     populacao_inicial()
+    print("oi")
+    filtragem(populacao)
+    
     
 
     x1 = []

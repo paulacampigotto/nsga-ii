@@ -4,6 +4,7 @@ from nsga2 import *
 import random
 import copy
 from math import ceil
+import sys
 
 def crossover(populacao):
     pop = copy.copy(eleicao(populacao))
@@ -77,93 +78,83 @@ def mutacao(populacao):
 
 
 def eleicao(pop):
-    pop_ord = sorted(pop,key=getKey)
+    pop_ord = sorted(pop,key=fitnessKey)
     return pop_ord
 
-# def filtragem(pop, fronteira):
-#     populacao = eleicao(pop)
-#     i = 0
-#     cont = 0
-#     while cont != len(fronteira[i])//2:
-#         tam = len(fronteira[i])
-#         if tam + cont < populacao//2:
-#             nova_pop.append(fronteira[i])
-#             cont += tam???
-#         else:
-#             aux = dist_aglomeracao(fronteira[i])
-#             nova_pop.append(aux???)
-#             cont = cont + (len(populacao)//2 - cont)
-#         i+=1
 
-#     return nova_pop
-
-# def domina(carteira1, carteira2): #verificar condições de dominância
-#     if carteira1.getRisco() < carteira2.getRisco() and carteira1.getRetorno() > carteira2.getRetorno()
-#         return True
-#     return False
-
-# def nds(pop):
-#     populacao = pop.copy()
-    
-#     for carteira1 in populacao:
-#         cont = 0
-#         fronteira = []
-#         front_aux = []
-#         for carteira2 in populacao:
-#             if carteira1 != carteira2:
-#                 if domina(carteira2, carteira1):
-#                     cont += 1
-#         if cont == 0:
-#             front_aux.append(carteira1)
-#             populacao.remove(carteira1)
-        
-#     k = 0
-#     while 
-
-def p_individuos(pop):
-    pop_nova = eleicao(pop)
-    populacao = []
-    for i in range(pop//2):
-        populacao.append(pop_nova[i])
-    return populacao
+def domina(carteira1, carteira2): #verificar condições de dominância
+    if(carteira1.getRisco() < carteira2.getRisco() and carteira1.getRetorno() > carteira2.getRetorno()):
+            return True
+    return False
 
 
-def fnds(pop):
-    S=[]
-    front = [[]]
-    n=[]
-    rank = [0 for i in range(0, len(pop))]
-
-    for p in pop:
-        Si=[]
-        ni=0
-        for q in pop:
-            if (p.getRetorno() > q.getRetorno() and p.getRisco() < q.getRisco()):
-                if q not in S[p.getId()]:
-                    Si.append(q)
-            else:
-                ni += 1
-
-        if ni==0:
-            rank[p.getId()] = 0
-            if p not in front[0]:
-                front[0].append(p)
-        S.append(Si)
-        n.append(ni)
-
+def nds(pop):
+    popu = pop.copy()
+    fronteira = [[]]
+    for p in popu:
+        p.setContador_n(0)
+        for q in popu:
+            if p != q:
+                if domina(p,q):
+                    p.appendDominadas(q)
+                else:
+                    if(domina(q,p)):
+                        p.setContador_n(p.getContador_n() + 1)
+        if p.getContador_n() == 0:
+            p.setRank(1)
+            fronteira[0].append(p)
     i = 0
-    while(front[i] != []):
-        Q=[]
-        for p in front[i]:
-            for q in S[p.getId()]:
-                n[q.getId()] =n[q.getId()] - 1
-                if( n[q.getId()]==0):
-                    rank[q.getId()]=i+1
-                    if q not in Q:
-                        Q.append(q)
-        i = i+1
-        front.append(Q)
-    
-    del front[len(front)-1]
-    return front
 
+    while(fronteira):
+        Q = []
+        for p in fronteira[i]:
+            for q in p.getDominadas():
+                q.setContador_n(q.getContador_n() - 1)
+                if q.getContador_n() == 0:
+                    q.setRank(i+1)
+                    Q.append(q)
+        i+=1
+        if(len(fronteira) == i):
+            fronteira.append([])
+        fronteira[i].append(Q)
+    
+    return fronteira
+
+def crowding_distance(fronteira):
+    n = len(fronteira)
+    pop_ord = []
+    for i in fronteira:
+        i.setDist_crowd(0)
+    
+    for m in range (2):
+        if m == 1:
+            pop_ord = sorted(fronteira,key=retornoKey)
+            # for i in pop_ord:
+        else:
+            pop_ord = sorted(fronteira, key=riscoKey)
+            pop_ord[0].setDist_crowd(sys.maxsize)
+            pop_ord[n-1].setDist_crowd(sys.maxsize)
+            for j in range(2, n-2):
+                pop_ord[j].setDist_crowd(pop_ord[j].getCrowd_dist() + (pop_ord[j+1].getCrowd_dist() - pop_ord[j-1].getCrowd_dist()))
+    return pop_ord
+
+def filtragem(populacao_entrada):
+    pop = populacao_entrada.copy()
+    p = len(pop)//2
+    fronteiras = nds(pop)
+    pop_linha = []
+    i = 0
+    cont = 0
+    while(True):
+        tam = len(fronteiras[i])
+        if(tam + cont < p):
+            pop_linha.append(fronteiras[i])
+            cont += tam
+        else:
+            aux = crowding_distance(fronteiras[i])
+            pop_linha.append(aux[:p-cont])
+            cont += (p-cont)
+        i += 1
+        if(cont != p):
+            break
+    return pop_linha

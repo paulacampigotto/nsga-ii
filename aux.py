@@ -35,8 +35,14 @@ def soma_aux(retorno, indice):
         s+= retorno[i]
     return s
 
-def getKey(x):
+def fitnessKey(x):
     return x.fitness()
+
+def retornoKey(x):
+    return x.getRetorno()
+
+def riscoKey(x):
+    return x.getRisco()
 
 def printPopulacao(pop):
     for carteira in pop:
