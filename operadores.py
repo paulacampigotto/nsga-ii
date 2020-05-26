@@ -7,25 +7,29 @@ from math import ceil
 import sys
 
 def crossover(populacao):
-    pop = copy.copy(eleicao(populacao))
+    pop = (eleicao(populacao)).copy()
     novaPop = []
     #seleciona os pais
-    for i in range(ceil(TAM_POP/2)):
+    for i in range(ceil(len(pop)/2)):
         while True:
-            print("1")
+            # print("1")
             probabilidade = random.random()
-            carteira = pop[random.randint(0,TAM_POP-1)]
-            print("fitness: " + str(carteira.fitness()))
-            print("denominador: " + str(pop[TAM_POP-1].fitness()))
-            if(probabilidade <= (carteira.fitness()/pop[TAM_POP-1].fitness())):
+            carteira = pop[random.randint(0,len(pop)-1)]
+            if(probabilidade <= (carteira.fitness()/pop[len(pop)-1].fitness())):
                 pai1 = copy.copy(carteira)
+                contt = 0
                 while True:
-                    print("2")
+                    contt+=1
+                    # print("2")
                     probabilidade = random.random()
-                    carteira = pop[random.randint(0,TAM_POP-1)]
-                    print("prob:" + str(probabilidade))
-                    print("div: " + str(carteira.fitness()/pop[TAM_POP-1].fitness()))
-                    if(probabilidade <= (carteira.fitness()/pop[TAM_POP-1].fitness())):
+                    carteira = pop[random.randint(0,len(pop) - 1)]
+                    # print("prob: ", probabilidade)
+                    # print("primeiro: ", carteira.fitness())
+                    if(pop[len(pop) - 1].fitness() < 0):
+                        print("segundo: ", pop[len(pop) - 1].fitness())
+                        print(contt)
+                    # print("fitness: ", carteira.fitness()/pop[len(pop) - 1].fitness())
+                    if(probabilidade <= (carteira.fitness()/pop[len(pop) - 1].fitness())):
                         if(pai1.getId() != carteira.getId()):
                             pai2 = copy.copy(carteira)
                             break
@@ -47,12 +51,6 @@ def crossover(populacao):
         pop.append(filho1)
         pop.append(filho2)
     
-   # pop = eleicao(pop).copy()
-
-    #novaPop contém os N (tamanho da população) melhores portfólios
-
-    # for i in range(len(pop)-1, 0, -1):
-    #     novaPop.append(pop[i])
 
     return pop
 
@@ -103,9 +101,9 @@ def nds(pop):
         if p.getContador_n() == 0:
             p.setRank(1)
             fronteira[0].append(p)
+    
     i = 0
-
-    while(fronteira):
+    while(fronteira[i]):
         Q = []
         for p in fronteira[i]:
             for q in p.getDominadas():
@@ -114,9 +112,10 @@ def nds(pop):
                     q.setRank(i+1)
                     Q.append(q)
         i+=1
+
         if(len(fronteira) == i):
             fronteira.append([])
-        fronteira[i].append(Q)
+        fronteira[i] = Q.copy()
     
     return fronteira
 
@@ -130,12 +129,19 @@ def crowding_distance(fronteira):
         if m == 1:
             pop_ord = sorted(fronteira,key=retornoKey)
             # for i in pop_ord:
-        else:
-            pop_ord = sorted(fronteira, key=riscoKey)
             pop_ord[0].setDist_crowd(sys.maxsize)
             pop_ord[n-1].setDist_crowd(sys.maxsize)
-            for j in range(2, n-2):
-                pop_ord[j].setDist_crowd(pop_ord[j].getCrowd_dist() + (pop_ord[j+1].getCrowd_dist() - pop_ord[j-1].getCrowd_dist()))
+            for j in range(1, n-2, 1):
+                pop_ord[j].setDist_crowd(pop_ord[j].getDist_crowd() + 
+                (pop_ord[j+1].getDist_crowd() - pop_ord[j-1].getDist_crowd())/(pop_ord[n-1].getRetorno() - pop_ord[0].getRetorno()))
+        else:
+            pop_ord = sorted(fronteira, key=riscoKey)
+
+            pop_ord[0].setDist_crowd(sys.maxsize)
+            pop_ord[n-1].setDist_crowd(sys.maxsize)
+            for j in range(1, n-2, 1):
+                pop_ord[j].setDist_crowd(pop_ord[j].getDist_crowd() + 
+                (pop_ord[j+1].getDist_crowd() - pop_ord[j-1].getDist_crowd())/(pop_ord[n-1].getRisco() - pop_ord[0].getRisco()))
     return pop_ord
 
 def filtragem(populacao_entrada):
@@ -152,9 +158,15 @@ def filtragem(populacao_entrada):
             cont += tam
         else:
             aux = crowding_distance(fronteiras[i])
-            pop_linha.append(aux[:p-cont])
+            pop_linha.append(aux[0:p-cont])
             cont += (p-cont)
         i += 1
-        if(cont != p):
+        if(cont == p):
             break
-    return pop_linha
+
+    pop = []
+    for i in pop_linha:
+        for j in i:
+            pop.append(j)
+    
+    return pop

@@ -119,7 +119,6 @@ class Carteira:
         # print("Fitness: " + str(self.fitness()))
 
     def fitness(self):
-        print("ret: " + str(self.retorno) + " risco: " + str(self.risco))
         return self.retorno/self.risco
 
     def getIndexPeloAtivo(self, ativo):
@@ -159,9 +158,7 @@ def inicializa():
         i.setRisco(ris)
         ret = sum(retorno(i.getCotacoes()))/len(i.getCotacoes())
         i.setRetorno(ret)
-    
-    for i in listaAtivos:
-        print(i.getRetorno())
+  
 
 def populacao_inicial():
     global populacao
@@ -197,38 +194,40 @@ def cvar(ativo):
 
     return [(cvar95), (cvar99), (cvar999)]
 
-def otimiza():
-    global populacao
-    popCrossover = crossover(populacao)
-    populacaoMutacao = mutacao(popCrossover)
-    popfiltragem = filtragem(populacaoMutacao)
-    populacao = popfiltragem.copy()
+def otimiza(populacao_filtrada):
+    # global populacao
+    popCrossover = crossover(populacao_filtrada)
+    populacaoMutada = mutacao(popCrossover)
+    return filtragem(populacaoMutada).copy()
 
 def main():
-
-    print("..")
+    global populacao
     inicializa()
     populacao_inicial()
-    print("oi")
-    filtragem(populacao)
-    
-    
+    pop_filtrada = filtragem(populacao)
 
+    # print("AQUI")
+    # for carteira in pop_filtrada:
+    #     for i in carteira:
+    #         i.printCarteira()
+
+    #GRAFICO INICIAL
     x1 = []
     y1 = []
-    for carteira in populacao:
+    
+    for carteira in pop_filtrada:
         x1.append(carteira.getRisco())
         y1.append(carteira.getRetorno())
 
     for i in range(ITERACOES):
-        otimiza()
+        pop = otimiza(pop_filtrada).copy()
+        pop_filtrada = pop.copy()
 
-    #rint("------------------------------------")
-    #printPopulacao(populacao)
-    
+
+    #GRAFICO FINAL
     x2 = []
     y2 = []
-    for carteira in populacao:
+    for carteira in pop_filtrada:
         x2.append(carteira.getRisco())
         y2.append(carteira.getRetorno())
 
