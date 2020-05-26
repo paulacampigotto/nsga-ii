@@ -21,7 +21,7 @@ def pesoProporcional(carteira,i):
 def ativo_aux(carteira):
     while True:
         flag = True
-        aleatorio = random.randint(0,59)
+        aleatorio = random.randint(0,56)
         for i in carteira:
             if i[0] == aleatorio:
                 flag = False
@@ -48,3 +48,19 @@ def printPopulacao(pop):
     for carteira in pop:
         carteira.printCarteira()
         print()
+
+def seleciona_dois_ativos(populacao):
+    a = random.choice(populacao)
+    while(True):
+        b = random.choice(populacao)
+        if(a.getId() != b.getId()):
+            return a,b
+
+def eleicao(pop):
+    pop_ord = sorted(pop,key=fitnessKey)
+    return pop_ord
+
+def domina(carteira1, carteira2): #verificar condições de dominância
+    if(carteira1.getRisco() < carteira2.getRisco() and carteira1.getRetorno() > carteira2.getRetorno()):
+            return True
+    return False

@@ -5,61 +5,41 @@ import random
 import copy
 from math import ceil
 import sys
+import timeit
 
-def crossover(populacao):
-    pop = (eleicao(populacao)).copy()
+def crossover(pop):
+    pares = selecao(pop)
     novaPop = []
-    #seleciona os pais
-    for i in range(ceil(len(pop)/2)):
-        while True:
-            # print("1")
-            probabilidade = random.random()
-            carteira = pop[random.randint(0,len(pop)-1)]
-            if(probabilidade <= (carteira.fitness()/pop[len(pop)-1].fitness())):
-                pai1 = copy.copy(carteira)
-                contt = 0
-                while True:
-                    contt+=1
-                    # print("2")
-                    probabilidade = random.random()
-                    carteira = pop[random.randint(0,len(pop) - 1)]
-                    # print("prob: ", probabilidade)
-                    # print("primeiro: ", carteira.fitness())
-                    if(pop[len(pop) - 1].fitness() < 0):
-                        print("segundo: ", pop[len(pop) - 1].fitness())
-                        print(contt)
-                    # print("fitness: ", carteira.fitness()/pop[len(pop) - 1].fitness())
-                    if(probabilidade <= (carteira.fitness()/pop[len(pop) - 1].fitness())):
-                        if(pai1.getId() != carteira.getId()):
-                            pai2 = copy.copy(carteira)
-                            break
-                break
-                
-        # cria os filhos
-
-        ativosFilho1 = []
-        ativosFilho2 = []
-
-        probabilidade = random.random()
-        for j in range(CARDINALIDADE):
-            ativosFilho1.append((pai1.getAtivos()[j][0],pai1.getProporcao(j) * probabilidade + pai2.getProporcao(j) * (1-probabilidade)))
-            ativosFilho2.append((pai2.getAtivos()[j][0],pai2.getProporcao(j) * probabilidade + pai1.getProporcao(j) * (1-probabilidade)))
-        
-        filho1 = Carteira(ativosFilho1) 
-        filho2 = Carteira(ativosFilho2) 
-
-        pop.append(filho1)
-        pop.append(filho2)
+    novaPop = copy.copy(pop)
     
 
-    return pop
+    for par in pares:
+        pai1 = copy.copy(par[0])
+        pai2 = copy.copy(par[1])
+        probabilidade = random.random()
+        ativosFilho1 = []
+        ativosFilho2 = []
+        for j in range(CARDINALIDADE): #percorre a carteira j da população
+
+            ativosFilho1.append((pai1.getAtivos()[j][0],pai1.getProporcao(j) * 
+            probabilidade + pai2.getProporcao(j) * (1-probabilidade)))
+
+            ativosFilho2.append((pai2.getAtivos()[j][0],pai2.getProporcao(j) * 
+            probabilidade + pai1.getProporcao(j) * (1-probabilidade)))
+
+        filho1 = Carteira(ativosFilho1)  
+        filho2 = Carteira(ativosFilho2) 
+        novaPop.append(filho1)
+        novaPop.append(filho2)  
+    
+    return novaPop
 
 def mutacao(populacao):
     for carteira in populacao:
         index1 = 0
         for ativo in carteira.getAtivos():
             probabili = random.random()
-            if (probabili <= 0.1):
+            if (probabili <= PROBABILIDADE_MUTACAO):
                 prob = random.random() # mutar proporção ou ativo
                 if(prob < 0.5):
                     r = random.uniform(0,ativo[1]) #gera um valor r aleatório para ser subtraído da proporção atual
@@ -74,20 +54,37 @@ def mutacao(populacao):
             index1+=1
     return populacao
 
-
-def eleicao(pop):
-    pop_ord = sorted(pop,key=fitnessKey)
-    return pop_ord
-
-
-def domina(carteira1, carteira2): #verificar condições de dominância
-    if(carteira1.getRisco() < carteira2.getRisco() and carteira1.getRetorno() > carteira2.getRetorno()):
-            return True
-    return False
-
-
-def nds(pop):
+def selecao(pop):
     popu = pop.copy()
+    pares = []
+    p_a = []
+    p_b = []
+    tam = len(pop)
+    qtd_pares = tam//2
+    for i in range(qtd_pares):
+        ind_a, ind_b = seleciona_dois_ativos(popu)
+        if ind_a.getRank() < ind_b.getRank():
+            p_a = copy.copy(ind_a)
+        else: 
+            p_a = copy.copy(ind_b)
+        for k in popu:
+            if k.getId() == p_a.getId():
+                popu.remove(k)
+        ind_c, ind_d = seleciona_dois_ativos(popu)
+        
+        if ind_c.getRank() < ind_d.getRank():
+            p_b = copy.copy(ind_c)
+        else:
+            p_b = copy.copy(ind_d)
+            
+        # for k in popu:
+        #     if k.getId() == p_b.getId():
+        #         popu.remove(k)
+        pares.append((p_a,p_b))
+    return pares   
+
+
+def nds(popu):
     fronteira = [[]]
     for p in popu:
         p.setContador_n(0)
@@ -101,7 +98,7 @@ def nds(pop):
         if p.getContador_n() == 0:
             p.setRank(1)
             fronteira[0].append(p)
-    
+
     i = 0
     while(fronteira[i]):
         Q = []
@@ -112,11 +109,9 @@ def nds(pop):
                     q.setRank(i+1)
                     Q.append(q)
         i+=1
-
-        if(len(fronteira) == i):
-            fronteira.append([])
+        fronteira.append([])
         fronteira[i] = Q.copy()
-    
+        
     return fronteira
 
 def crowding_distance(fronteira):
@@ -134,20 +129,25 @@ def crowding_distance(fronteira):
             for j in range(1, n-2, 1):
                 pop_ord[j].setDist_crowd(pop_ord[j].getDist_crowd() + 
                 (pop_ord[j+1].getDist_crowd() - pop_ord[j-1].getDist_crowd())/(pop_ord[n-1].getRetorno() - pop_ord[0].getRetorno()))
+        
         else:
-            pop_ord = sorted(fronteira, key=riscoKey)
-
+            pop_ord = sorted(fronteira, key=riscoKey, reverse=True)
             pop_ord[0].setDist_crowd(sys.maxsize)
             pop_ord[n-1].setDist_crowd(sys.maxsize)
             for j in range(1, n-2, 1):
                 pop_ord[j].setDist_crowd(pop_ord[j].getDist_crowd() + 
                 (pop_ord[j+1].getDist_crowd() - pop_ord[j-1].getDist_crowd())/(pop_ord[n-1].getRisco() - pop_ord[0].getRisco()))
+    
     return pop_ord
 
-def filtragem(populacao_entrada):
+def filtragem(populacao_entrada, primeira_iteracao):
     pop = populacao_entrada.copy()
-    p = len(pop)//2
+    if primeira_iteracao:
+        p = len(pop) 
+    else:        
+        p = len(pop)//2
     fronteiras = nds(pop)
+    fronteiras.pop(len(fronteiras) - 1)
     pop_linha = []
     i = 0
     cont = 0
@@ -168,5 +168,4 @@ def filtragem(populacao_entrada):
     for i in pop_linha:
         for j in i:
             pop.append(j)
-    
     return pop

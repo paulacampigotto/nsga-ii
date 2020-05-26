@@ -8,6 +8,7 @@ from os import listdir
 from os.path import isfile, join
 from pprint import pprint
 import numpy as np
+import timeit
 
 class Ativo:
     idAtivo = itertools.count()
@@ -130,6 +131,12 @@ class Carteira:
 
     def setAtivoPeloIndex(self,index, ativo):
         self.ativos[index] = ativo
+
+    def cardinalidade(self):
+        cont = 0
+        for i in self.ativos:
+            cont += 1
+        return cont
                 
 
 def inicializa():    
@@ -188,9 +195,9 @@ def cvar(ativo):
     var99 = ret_ord[ceil((1-(99/100))*total_count)]
     var999 = ret_ord[ceil((1-(99.9/100))*total_count)]
 
-    cvar95 = abs((1/((1-(95/100))*total_count))*soma_aux(ret_ord, ceil((1-(95/100))*total_count)))
-    cvar99 = abs((1/((1-(99/100))*total_count))*soma_aux(ret_ord, ceil((1-(99/100))*total_count)))
-    cvar999 = abs((1/((1-(99.9/100))*total_count))*soma_aux(ret_ord, ceil((1-(99.9/100))*total_count)))
+    cvar95 = -((1/((1-(95/100))*total_count))*soma_aux(ret_ord, ceil((1-(95/100))*total_count)))
+    cvar99 = -((1/((1-(99/100))*total_count))*soma_aux(ret_ord, ceil((1-(99/100))*total_count)))
+    cvar999 = -((1/((1-(99.9/100))*total_count))*soma_aux(ret_ord, ceil((1-(99.9/100))*total_count)))
 
     return [(cvar95), (cvar99), (cvar999)]
 
@@ -198,40 +205,78 @@ def otimiza(populacao_filtrada):
     # global populacao
     popCrossover = crossover(populacao_filtrada)
     populacaoMutada = mutacao(popCrossover)
-    return filtragem(populacaoMutada).copy()
+    return filtragem(populacaoMutada, False).copy()
+
 
 def main():
+
     global populacao
-    inicializa()
-    populacao_inicial()
-    pop_filtrada = filtragem(populacao)
+    pontos_x = []
+    pontos_y = []
+    primeira_execucao = True
 
-    # print("AQUI")
-    # for carteira in pop_filtrada:
-    #     for i in carteira:
-    #         i.printCarteira()
+    #EXECUÇÕES
+    for j in range(EXECUCOES):
 
+        #INICIALIZAÇÃO
+        populacao = []
+        inicializa()
+        populacao_inicial()
+        pop_filtrada = filtragem(populacao, True)
+
+        #GRAFICO INICIAL 
+        x1 = []
+        y1 = []
+        
+        for carteira in pop_filtrada:
+            x1.append(carteira.getRisco())
+            y1.append(carteira.getRetorno())
+
+        #ITERAÇÕES
+        cont=0
+        start = timeit.default_timer()  
+        for i in range(ITERACOES):
+            print(cont)
+            cont+=1
+            pop = otimiza(pop_filtrada)
+            pop_filtrada = pop.copy()
+
+        x2 = []
+        y2 = []
+        for carteira in pop_filtrada:
+            x2.append(carteira.getRisco())
+            y2.append(carteira.getRetorno())   
+
+        if primeira_execucao:
+            pontos_x = copy.copy(x2)
+            pontos_y = copy.copy(y2)
+            primeira_execucao = False
+
+        else:
+            # print("pop = ", len(pop_filtrada))
+            # print("pts x = ", len(pontos_x))
+            # print("x2 = ", len(x2))
+            for i in range(len(pop_filtrada)):
+                pontos_x[i] += x2[i]
+                pontos_y[i] += y2[i]
+        # print("Passou :D")
+        # for i in range(len(pop_filtrada)):
+        #     print("x = ", pontos_x[i])
+        #     print()
+        #     print("y = ", pontos_y[i])
+
+    for i in range(len(pop_filtrada)):
+        pontos_x[i]/=EXECUCOES
+        pontos_y[i]/=EXECUCOES
+
+
+
+
+
+    stop = timeit.default_timer()
+    print('******Time: ', stop - start)  
+    
     #GRAFICO INICIAL
-    x1 = []
-    y1 = []
-    
-    for carteira in pop_filtrada:
-        x1.append(carteira.getRisco())
-        y1.append(carteira.getRetorno())
-
-    for i in range(ITERACOES):
-        pop = otimiza(pop_filtrada).copy()
-        pop_filtrada = pop.copy()
-
-
-    #GRAFICO FINAL
-    x2 = []
-    y2 = []
-    for carteira in pop_filtrada:
-        x2.append(carteira.getRisco())
-        y2.append(carteira.getRetorno())
-
-    
     plt.scatter(x1, y1)
     plt.axis([min(x1), max(x1), min(y1), max(y1)])
     plt.xlabel('Risco')
@@ -239,8 +284,9 @@ def main():
     plt.savefig('paretoInicial.png')
     plt.show()
         
-    plt.scatter(x2, y2)
-    plt.axis([min(x2), max(x2), min(y2), max(y2)])
+    #GRAFICO FINAL
+    plt.scatter(pontos_x, pontos_y)
+    plt.axis([min(pontos_x), max(pontos_x), min(pontos_y), max(pontos_y)])
     plt.xlabel('Risco')
     plt.ylabel('Retorno')
     plt.savefig('paretoFinal.png')
