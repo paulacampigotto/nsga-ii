@@ -241,6 +241,7 @@ def main():
             pop = otimiza(pop_filtrada)
             pop_filtrada = pop.copy()
 
+        #GRAFICO FINAL DA ITERAÇÃO
         x2 = []
         y2 = []
         for carteira in pop_filtrada:
@@ -253,24 +254,14 @@ def main():
             primeira_execucao = False
 
         else:
-            # print("pop = ", len(pop_filtrada))
-            # print("pts x = ", len(pontos_x))
-            # print("x2 = ", len(x2))
             for i in range(len(pop_filtrada)):
                 pontos_x[i] += x2[i]
                 pontos_y[i] += y2[i]
-        # print("Passou :D")
-        # for i in range(len(pop_filtrada)):
-        #     print("x = ", pontos_x[i])
-        #     print()
-        #     print("y = ", pontos_y[i])
 
+    #GRAFICO FINAL DA EXECUÇÃO
     for i in range(len(pop_filtrada)):
         pontos_x[i]/=EXECUCOES
         pontos_y[i]/=EXECUCOES
-
-
-
 
 
     stop = timeit.default_timer()
