@@ -21,7 +21,7 @@ def pesoProporcional(carteira,i):
 def ativo_aux(carteira):
     while True:
         flag = True
-        aleatorio = random.randint(0,56)
+        aleatorio = random.randint(0,QUANTIDADE_ATIVOS -1)
         for i in carteira:
             if i[0] == aleatorio:
                 flag = False

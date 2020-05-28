@@ -1,6 +1,7 @@
 from operadores import *
 from aux import *
 from globais import *
+from metricas import *
 import itertools
 import matplotlib.pyplot as plt
 import random
@@ -43,6 +44,7 @@ class Ativo:
 
 class Carteira:
     idCarteira = itertools.count()
+
     def __init__(self, ativos):
         self.ativos = ativos.copy() # ativos = (Ativo, proporção)
         self.risco = self.defineRisco()
@@ -129,6 +131,9 @@ class Carteira:
                 return j
             j+=1
 
+    def getAtivoPeloIndex(self,index):
+        return self.ativos[index]
+
     def setAtivoPeloIndex(self,index, ativo):
         self.ativos[index] = ativo
 
@@ -142,6 +147,7 @@ class Carteira:
 def inicializa():    
     
     global listaAtivos
+    global lista_ibovespa
 
     nomesArquivos = [f for f in listdir("/home/paula/Documents/IC/nsga-ii/ativos") if isfile(join("/home/paula/Documents/IC/nsga-ii/ativos", f))]
     
@@ -156,16 +162,29 @@ def inicializa():
                     adj_close = float(aux)
                     listaCotacoes.append(adj_close)
             codigoAtivo = i[:5]
-            listaAtivos.append(Ativo(codigoAtivo,listaCotacoes))
+            if(i == "^BVSP.csv"):
+                lista_ibovespa = listaCotacoes.copy()
+            else:
+                listaAtivos.append(Ativo(codigoAtivo,listaCotacoes))
 
+    
+        
+def metrica_risco(valor):
 
     #calcula o risco e o retorno de cada ativo e atualiza os valores de listaAtivos
     for i in listaAtivos:
-        ris = cvar(i.getCotacoes())[1] #[0] = CVaR 95% | [1] = CVaR 99% | [2] = CVaR 99.9%
+        if(valor == 0):
+            ris = cvar(i.getCotacoes())[1] #[0] = CVaR 95% | [1] = CVaR 99% | [2] = CVaR 99.9%
+        elif(valor == 1):
+            ris = ewma(i.getCotacoes())
+        elif(valor == 2):
+            ris = garch(i.getCotacoes())
+        elif(valor == 3):
+            ris = lpm(i.getCotacoes())
         i.setRisco(ris)
         ret = sum(retorno(i.getCotacoes()))/len(i.getCotacoes())
         i.setRetorno(ret)
-  
+
 
 def populacao_inicial():
     global populacao
@@ -176,30 +195,64 @@ def populacao_inicial():
             carteira.append(ativo)
         populacao.append(Carteira(carteira))
 
-def retorno(ativo):
-    retorno = []
-    for i in range(len(ativo) -1):
-        #if(ativo[i] != 0):
-        #retorno.append(np.log(ativo[i+1] / (ativo[i])))
-        retorno.append((ativo[i+1] - ativo[i]) / ativo[i])
-        #else:
-        #    retorno.append(( ativo[i+1] - ativo[i] ) / 0.001)
-    return retorno
 
-def cvar(ativo):
-    ret_ord = retorno(ativo)
-    ret_ord.sort()
-    total_count = len(ret_ord)
+def melhor_carteira(pop):
+    melhor = pop[0]
+    for carteira in pop:
+        if carteira.fitness() > melhor.fitness():
+            melhor = carteira
+    return carteira
 
-    var95 = ret_ord[ceil((1-(95/100))*total_count)]
-    var99 = ret_ord[ceil((1-(99/100))*total_count)]
-    var999 = ret_ord[ceil((1-(99.9/100))*total_count)]
 
-    cvar95 = -((1/((1-(95/100))*total_count))*soma_aux(ret_ord, ceil((1-(95/100))*total_count)))
-    cvar99 = -((1/((1-(99/100))*total_count))*soma_aux(ret_ord, ceil((1-(99/100))*total_count)))
-    cvar999 = -((1/((1-(99.9/100))*total_count))*soma_aux(ret_ord, ceil((1-(99.9/100))*total_count)))
+def grafico_risco_retorno(x,y,nome):
+    
+    plt.scatter(x, y)
+    plt.axis([min(x), max(x), min(y), max(y)])
+    plt.xlabel('Risco')
+    plt.ylabel('Retorno')
+    plt.title(nome)
+    plt.savefig(nome + '.png')
+    plt.show()
 
-    return [(cvar95), (cvar99), (cvar999)]
+
+def calcula_cotacoes_carteira(carteira):
+    numero_cotacoes = len(carteira.getAtivoPeloIndex(0)[0].getCotacoes())
+    matriz = []
+    for i in range(carteira.cardinalidade()):
+        matriz.append([0]*numero_cotacoes)
+
+    for ativo in range(carteira.cardinalidade()):
+        for cotacao in range(numero_cotacoes):
+            matriz[ativo][cotacao] +=  carteira.getAtivoPeloIndex(0)[0].getCotacoes()[cotacao] * carteira.getAtivoPeloIndex(ativo)[1]
+
+    y = [0]*numero_cotacoes
+    for i in range(numero_cotacoes):
+        for ativo in range(len(matriz)):
+            y[i] += matriz[ativo][i]
+            
+    return y
+
+def grafico_tempo(carteira_cvar, carteira_ewma, carteira_garch, carteira_lpm):
+    global lista_ibovespa
+
+    cotacoes_cvar = calcula_cotacoes_carteira(carteira_cvar)
+    cotacoes_ewma = calcula_cotacoes_carteira(carteira_ewma)
+    cotacoes_garch = calcula_cotacoes_carteira(carteira_garch)
+    cotacoes_lpm = calcula_cotacoes_carteira(carteira_lpm)
+
+
+    plt.plot(range(len(retorno_acumulado(cotacoes_cvar))),retorno_acumulado(cotacoes_cvar),color = 'green', label = 'CVaR')
+    plt.plot(range(len(retorno_acumulado(cotacoes_ewma))),retorno_acumulado(cotacoes_ewma),color = 'red', label = 'EWMA')
+    plt.plot(range(len(retorno_acumulado(cotacoes_garch))),retorno_acumulado(cotacoes_garch), color = 'orange', label = 'GARCH')
+    plt.plot(range(len(retorno_acumulado(cotacoes_lpm))),retorno_acumulado(cotacoes_lpm),color = 'blue', label = 'LPM')
+    
+    plt.plot(range(len(retorno_acumulado(lista_ibovespa))), retorno_acumulado(lista_ibovespa), color = 'black', label = 'IBOVESPA')
+    plt.legend()
+    plt.xlabel('Tempo')
+    plt.ylabel('Retorno acumulado (%)')
+    plt.title("Retorno Acumulado")
+    plt.savefig('MelhorCarteira.png')
+    plt.show()
 
 def otimiza(populacao_filtrada):
     # global populacao
@@ -211,78 +264,114 @@ def otimiza(populacao_filtrada):
 def main():
 
     global populacao
-    pontos_x = []
-    pontos_y = []
-    primeira_execucao = True
-
-    #EXECUÇÕES
-    for j in range(EXECUCOES):
-
-        #INICIALIZAÇÃO
-        populacao = []
-        inicializa()
-        populacao_inicial()
-        pop_filtrada = filtragem(populacao, True)
-
-        #GRAFICO INICIAL 
-        x1 = []
-        y1 = []
-        
-        for carteira in pop_filtrada:
-            x1.append(carteira.getRisco())
-            y1.append(carteira.getRetorno())
-
-        #ITERAÇÕES
-        cont=0
-        start = timeit.default_timer()  
-        for i in range(ITERACOES):
-            print(cont)
-            cont+=1
-            pop = otimiza(pop_filtrada)
-            pop_filtrada = pop.copy()
-
-        #GRAFICO FINAL DA ITERAÇÃO
-        x2 = []
-        y2 = []
-        for carteira in pop_filtrada:
-            x2.append(carteira.getRisco())
-            y2.append(carteira.getRetorno())   
-
-        if primeira_execucao:
-            pontos_x = copy.copy(x2)
-            pontos_y = copy.copy(y2)
-            primeira_execucao = False
-
-        else:
-            for i in range(len(pop_filtrada)):
-                pontos_x[i] += x2[i]
-                pontos_y[i] += y2[i]
-
-    #GRAFICO FINAL DA EXECUÇÃO
-    for i in range(len(pop_filtrada)):
-        pontos_x[i]/=EXECUCOES
-        pontos_y[i]/=EXECUCOES
-
-
-    stop = timeit.default_timer()
-    print('******Time: ', stop - start)  
     
-    #GRAFICO INICIAL
-    plt.scatter(x1, y1)
-    plt.axis([min(x1), max(x1), min(y1), max(y1)])
-    plt.xlabel('Risco')
-    plt.ylabel('Retorno')
-    plt.savefig('paretoInicial.png')
-    plt.show()
-        
-    #GRAFICO FINAL
-    plt.scatter(pontos_x, pontos_y)
-    plt.axis([min(pontos_x), max(pontos_x), min(pontos_y), max(pontos_y)])
-    plt.xlabel('Risco')
-    plt.ylabel('Retorno')
-    plt.savefig('paretoFinal.png')
-    plt.show()
+    inicializa()
+    pontos_x_cvar = []
+    pontos_y_cvar = []
+    solucao_final_cvar = None
 
+    pontos_x_ewma = []
+    pontos_y_ewma = []
+    solucao_final_ewma = None
+
+    pontos_x_garch = []
+    pontos_y_garch = []
+    solucao_final_garch = None
+
+    pontos_x_lpm = []
+    pontos_y_lpm = []
+    solucao_final_lpm = None
+     
+    for risco in range(4):
+        metrica_risco(risco)
+        primeira_execucao = True  
+           
+        pontos_x = []
+        pontos_y = []
+        solucao_final = None  
+        
+        #EXECUÇÕES
+        for j in range(EXECUCOES):
+            start = timeit.default_timer()  
+
+            #INICIALIZAÇÃO
+            populacao = []
+            populacao_inicial()
+            pop_filtrada = filtragem(populacao, True)
+
+            #GRAFICO INICIAL 
+            x1 = []
+            y1 = []
+            
+            for carteira in pop_filtrada:
+                x1.append(carteira.getRisco())
+                y1.append(carteira.getRetorno())
+
+            #ITERAÇÕES
+            cont=0
+            for i in range(ITERACOES):
+                print("RISCO: " + str(risco) + " EXEC: " + str(j) + " ITERACOES: " + str(cont))
+                cont+=1
+                pop = otimiza(pop_filtrada)
+                pop_filtrada = pop.copy()
+                solucao_parcial = melhor_carteira(pop_filtrada)
+                if solucao_final == None or solucao_parcial.fitness() > solucao_final.fitness():
+                    solucao_final = solucao_parcial
+
+            #GRAFICO FINAL DA ITERAÇÃO
+            x2 = []
+            y2 = []
+            for carteira in pop_filtrada:
+                x2.append(carteira.getRisco())
+                y2.append(carteira.getRetorno())   
+
+            if primeira_execucao:
+                pontos_x = copy.copy(x2)
+                pontos_y = copy.copy(y2)
+                primeira_execucao = False
+
+            else:
+                for i in range(len(pop_filtrada)):
+                    pontos_x[i] += x2[i]
+                    pontos_y[i] += y2[i]
+            
+
+            stop = timeit.default_timer()
+            print('******Time: ', stop - start)  
+
+        #GRAFICO FINAL DA EXECUÇÃO
+        for i in range(len(pop_filtrada)):
+            pontos_x[i]/=EXECUCOES
+            pontos_y[i]/=EXECUCOES
+        
+        if(risco == 0):
+            solucao_final_cvar = solucao_final
+            pontos_x_cvar = pontos_x
+            pontos_y_cvar = pontos_y
+        elif(risco == 1):
+            solucao_final_ewma = solucao_final
+            pontos_x_ewma = pontos_x
+            pontos_y_ewma = pontos_y
+        elif(risco == 2):
+            solucao_final_garch = solucao_final
+            pontos_x_garch = pontos_x
+            pontos_y_garch = pontos_y
+        else:
+            solucao_final_lpm = solucao_final
+            pontos_x_lpm = pontos_x
+            pontos_y_lpm = pontos_y
+        
+
+
+
+    grafico_tempo(solucao_final_cvar, solucao_final_ewma, solucao_final_garch, solucao_final_lpm)
+    grafico_risco_retorno(x1,y1,"paretoInicial")
+    #grafico_risco_retorno(pontos_x_cvar,pontos_y_cvar, pontos_x_ewma, 
+    #pontos_y_ewma,pontos_x_garch,pontos_y_garch, pontos_x_lpm, pontos_y_lpm,"paretoFinal")
+    grafico_risco_retorno(pontos_x_cvar, pontos_y_cvar, "paretoFinalCVaR")
+    grafico_risco_retorno(pontos_x_ewma, pontos_y_ewma, "paretoFinalEWMA")
+    grafico_risco_retorno(pontos_x_garch, pontos_y_garch, "paretoFinalGARCH")
+    grafico_risco_retorno(pontos_x_lpm, pontos_y_lpm, "paretoFinalLPM")
 if __name__ == "__main__":
     main()
 
