@@ -83,20 +83,25 @@ def cvar(ativo):
     return [(cvar95), (cvar99), (cvar999)]
 
 
-def metrica_risco(valor):
-    global lista_ativos
+def metrica_risco(lista_ativos, valor):
+
     #calcula o risco e o retorno de cada ativo e atualiza os valores de listaAtivos
     for i in lista_ativos:
         if(valor == 0):
+            print(i.getCotacoes())
             ris = cvar(i.getCotacoes())[1] #[0] = CVaR 95% | [1] = CVaR 99% | [2] = CVaR 99.9%
+            print(ris)
         elif(valor == 1):
-            ris = ewma(i.getCotacoes())
+            ris = var(i.getCotacoes())
         elif(valor == 2):
-            ris = garch(i.getCotacoes())
+            ris = ewma(i.getCotacoes())
         elif(valor == 3):
-            ris = var(i.getCotacoes())[1]
+            ris = garch(i.getCotacoes())[1]
         elif(valor == 4):
             ris = lpm(i.getCotacoes())
         i.setRisco(ris)
+        print(i.getRisco())
         ret = sum(retorno(i.getCotacoes()))/len(i.getCotacoes())
         i.setRetorno(ret)
+        
+    return lista_ativos

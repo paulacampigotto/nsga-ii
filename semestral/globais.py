@@ -8,9 +8,8 @@ PROBABILIDADE_MUTACAO = 0.1
 
 populacao = []
 lista_ativos = []
-lista_ibovespa = []
-lista_ativos_2019 = []
 lista_ibovespa_2019 = []
+lista_ativos_2019 = []
 
 ### EWMA
 λ = 0.94
