@@ -1,9 +1,9 @@
 from globais import *
 from aux import *
 from nsga2 import *
+from math import ceil
 import random
 import copy
-from math import ceil
 import sys
 import timeit
 

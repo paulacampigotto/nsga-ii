@@ -3,15 +3,15 @@ from nsga2 import *
 from operadores import *
 from aux import *
 from globais import *
-import itertools
-import matplotlib.pyplot as plt
-import random
 from os import listdir
 from os.path import isfile, join
 from pprint import pprint
-import numpy as np
-import timeit
 from math import ceil
+import matplotlib.pyplot as plt
+import numpy as np
+import itertools
+import random
+import timeit
 
 def retorno(ativo):
     retorno = []
@@ -62,19 +62,41 @@ def var(ativo):
     var99 = ret_ord[ceil((1-(99/100))*total_count)]
     var999 = ret_ord[ceil((1-(99.9/100))*total_count)]
 
-    return [(var95), (var99), (var999)]
+    return [(-var95), (-var99), (-var999)]
     
+
+def soma_aux(retorno, indice):
+    s = 0
+    for i in range(indice):
+        s+= retorno[i]
+    return s
+
 def cvar(ativo):
     ret_ord = retorno(ativo)
     ret_ord.sort()
     total_count = len(ret_ord)
-
-    # var95 = ret_ord[ceil((1-(95/100))*total_count)]
-    # var99 = ret_ord[ceil((1-(99/100))*total_count)]
-    # var999 = ret_ord[ceil((1-(99.9/100))*total_count)]
 
     cvar95 = -((1/((1-(95/100))*total_count))*soma_aux(ret_ord, ceil((1-(95/100))*total_count)))
     cvar99 = -((1/((1-(99/100))*total_count))*soma_aux(ret_ord, ceil((1-(99/100))*total_count)))
     cvar999 = -((1/((1-(99.9/100))*total_count))*soma_aux(ret_ord, ceil((1-(99.9/100))*total_count)))
 
     return [(cvar95), (cvar99), (cvar999)]
+
+
+def metrica_risco(valor):
+
+    #calcula o risco e o retorno de cada ativo e atualiza os valores de listaAtivos
+    for i in listaAtivos:
+        if(valor == 0):
+            ris = cvar(i.getCotacoes())[1] #[0] = CVaR 95% | [1] = CVaR 99% | [2] = CVaR 99.9%
+        elif(valor == 1):
+            ris = ewma(i.getCotacoes())
+        elif(valor == 2):
+            ris = garch(i.getCotacoes())
+        elif(valor == 3):
+            ris = var(i.getCotacoes())[1]
+        elif(valor == 4):
+            ris = lpm(i.getCotacoes())
+        i.setRisco(ris)
+        ret = sum(retorno(i.getCotacoes()))/len(i.getCotacoes())
+        i.setRetorno(ret)

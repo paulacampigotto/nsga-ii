@@ -1,5 +1,15 @@
 from globais import *
+from nsga2 import *
+from operadores import *
+from metricas import *
+from os.path import isfile, join
+from os import listdir
+from pprint import pprint
+import matplotlib.pyplot as plt
+import numpy as np
+import itertools
 import random
+import timeit
 
 def pesoProporcional(carteira,i):
     soma = 0.0
@@ -64,3 +74,39 @@ def domina(carteira1, carteira2): #verificar condições de dominância
     if(carteira1.getRisco() < carteira2.getRisco() and carteira1.getRetorno() > carteira2.getRetorno()):
             return True
     return False
+
+def melhor_carteira(pop):
+    melhor = pop[0]
+    for carteira in pop:
+        if carteira.fitness() > melhor.fitness():
+            melhor = carteira
+    return carteira
+
+
+def calcula_cotacoes_carteira(carteira):
+    numero_cotacoes = len(carteira.getAtivoPeloIndex(0)[0].getCotacoes())
+    matriz = []
+    for i in range(carteira.cardinalidade()):
+        matriz.append([0]*numero_cotacoes)
+
+    for ativo in range(carteira.cardinalidade()):
+        for cotacao in range(numero_cotacoes):
+            matriz[ativo][cotacao] +=  carteira.getAtivoPeloIndex(0)[0].getCotacoes()[cotacao] * carteira.getAtivoPeloIndex(ativo)[1]
+
+    y = [0]*numero_cotacoes
+    for i in range(numero_cotacoes):
+        for ativo in range(len(matriz)):
+            y[i] += matriz[ativo][i]
+            
+    return y
+
+
+def grafico_risco_retorno(x,y,nome):
+    
+    plt.scatter(x, y)
+    plt.axis([min(x), max(x), min(y), max(y)])
+    plt.xlabel('Risco')
+    plt.ylabel('Retorno')
+    plt.title(nome)
+    plt.savefig("graficos/"+nome + '.png')
+    plt.show()

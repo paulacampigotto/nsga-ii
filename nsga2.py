@@ -2,13 +2,13 @@ from operadores import *
 from aux import *
 from globais import *
 from metricas import *
-import itertools
-import matplotlib.pyplot as plt
-import random
 from os import listdir
 from os.path import isfile, join
 from pprint import pprint
+import matplotlib.pyplot as plt
 import numpy as np
+import random
+import itertools
 import timeit
 
 class Ativo:
@@ -143,8 +143,6 @@ class Carteira:
             cont += 1
         return cont
                 
-
-
 def inicializa():    
     
     global listaAtivos
@@ -185,23 +183,6 @@ def inicializa():
                 listaAtivos.append(Ativo(codigoAtivo,listaCotacoes[i]))
     
         
-def metrica_risco(valor):
-
-    #calcula o risco e o retorno de cada ativo e atualiza os valores de listaAtivos
-    for i in listaAtivos:
-        if(valor == 0):
-            ris = cvar(i.getCotacoes())[1] #[0] = CVaR 95% | [1] = CVaR 99% | [2] = CVaR 99.9%
-        elif(valor == 1):
-            ris = ewma(i.getCotacoes())
-        elif(valor == 2):
-            ris = garch(i.getCotacoes())
-        elif(valor == 3):
-            ris = lpm(i.getCotacoes())
-        i.setRisco(ris)
-        ret = sum(retorno(i.getCotacoes()))/len(i.getCotacoes())
-        i.setRetorno(ret)
-
-
 def populacao_inicial():
     global populacao
     for j in range(TAM_POP):
@@ -212,62 +193,28 @@ def populacao_inicial():
         populacao.append(Carteira(carteira))
 
 
-def melhor_carteira(pop):
-    melhor = pop[0]
-    for carteira in pop:
-        if carteira.fitness() > melhor.fitness():
-            melhor = carteira
-    return carteira
-
-
-def grafico_risco_retorno(x,y,nome):
-    
-    plt.scatter(x, y)
-    plt.axis([min(x), max(x), min(y), max(y)])
-    plt.xlabel('Risco')
-    plt.ylabel('Retorno')
-    plt.title(nome)
-    plt.savefig("figuras/"+nome + '.png')
-    plt.show()
-
-
-def calcula_cotacoes_carteira(carteira):
-    numero_cotacoes = len(carteira.getAtivoPeloIndex(0)[0].getCotacoes())
-    matriz = []
-    for i in range(carteira.cardinalidade()):
-        matriz.append([0]*numero_cotacoes)
-
-    for ativo in range(carteira.cardinalidade()):
-        for cotacao in range(numero_cotacoes):
-            matriz[ativo][cotacao] +=  carteira.getAtivoPeloIndex(0)[0].getCotacoes()[cotacao] * carteira.getAtivoPeloIndex(ativo)[1]
-
-    y = [0]*numero_cotacoes
-    for i in range(numero_cotacoes):
-        for ativo in range(len(matriz)):
-            y[i] += matriz[ativo][i]
-            
-    return y
-
-def grafico_tempo(carteira_cvar, carteira_ewma, carteira_garch, carteira_lpm):
+def grafico_tempo(carteira_cvar, carteira_var, carteira_ewma, carteira_garch, carteira_lpm):
     global lista_ibovespa
 
     cotacoes_cvar = calcula_cotacoes_carteira(carteira_cvar)
+    cotacoes_var = calcula_cotacoes_carteira(carteira_var)
     cotacoes_ewma = calcula_cotacoes_carteira(carteira_ewma)
     cotacoes_garch = calcula_cotacoes_carteira(carteira_garch)
     cotacoes_lpm = calcula_cotacoes_carteira(carteira_lpm)
 
 
-    plt.plot(range(len(retorno_acumulado(cotacoes_cvar))),retorno_acumulado(cotacoes_cvar),color = 'green', label = 'CVaR')
-    plt.plot(range(len(retorno_acumulado(cotacoes_ewma))),retorno_acumulado(cotacoes_ewma),color = 'red', label = 'EWMA')
-    plt.plot(range(len(retorno_acumulado(cotacoes_garch))),retorno_acumulado(cotacoes_garch), color = 'orange', label = 'GARCH')
-    plt.plot(range(len(retorno_acumulado(cotacoes_lpm))),retorno_acumulado(cotacoes_lpm),color = 'blue', label = 'LPM')
+    plt.plot(range(len(retorno_acumulado(cotacoes_cvar))),retorno_acumulado(cotacoes_cvar),color = '#66ffa3', label = 'CVaR')
+    plt.plot(range(len(retorno_acumulado(cotacoes_var))),retorno_acumulado(cotacoes_var),color = '#ff66c7', label = 'VaR')
+    plt.plot(range(len(retorno_acumulado(cotacoes_ewma))),retorno_acumulado(cotacoes_ewma),color = '#c457ff', label = 'EWMA')
+    plt.plot(range(len(retorno_acumulado(cotacoes_garch))),retorno_acumulado(cotacoes_garch), color = '#ffeb57', label = 'GARCH')
+    plt.plot(range(len(retorno_acumulado(cotacoes_lpm))),retorno_acumulado(cotacoes_lpm),color = '#66c2ff', label = 'LPM')
     
-    plt.plot(range(len(retorno_acumulado(lista_ibovespa))), retorno_acumulado(lista_ibovespa), color = 'black', label = 'IBOVESPA')
+    plt.plot(range(len(retorno_acumulado(lista_ibovespa))), retorno_acumulado(lista_ibovespa), color = 'black', label = 'Ibovespa')
     plt.legend()
     plt.xlabel('Tempo')
     plt.ylabel('Retorno acumulado (%)')
     plt.title("Retorno Acumulado")
-    plt.savefig('figuras/MelhorCarteira.png')
+    plt.savefig('graficos/MelhorCarteira.png')
     plt.show()
 
 def otimiza(populacao_filtrada):
@@ -286,6 +233,11 @@ def main():
     pontos_y_cvar = []
     solucao_final_cvar = None
 
+    pontos_x_var = []
+    pontos_y_var = []
+    solucao_final_var = None
+
+
     pontos_x_ewma = []
     pontos_y_ewma = []
     solucao_final_ewma = None
@@ -298,7 +250,7 @@ def main():
     pontos_y_lpm = []
     solucao_final_lpm = None
      
-    for risco in range(4):
+    for risco in range(QUANTIDADE_METRICAS):
         metrica_risco(risco)
         primeira_execucao = True  
            
@@ -372,6 +324,10 @@ def main():
             solucao_final_garch = solucao_final
             pontos_x_garch = pontos_x
             pontos_y_garch = pontos_y
+        elif(risco == 3):
+            solucao_final_var = solucao_final
+            pontos_x_var = pontos_x
+            pontos_y_var = pontos_y
         else:
             solucao_final_lpm = solucao_final
             pontos_x_lpm = pontos_x
@@ -379,6 +335,9 @@ def main():
         
 
     print("CVAR")
+    solucao_final_cvar.printCarteira()
+    
+    print("VAR")
     solucao_final_cvar.printCarteira()
 
     print("EWMA")
@@ -391,11 +350,12 @@ def main():
     solucao_final_lpm.printCarteira()
 
 
-    grafico_tempo(solucao_final_cvar, solucao_final_ewma, solucao_final_garch, solucao_final_lpm)
+    grafico_tempo(solucao_final_cvar, solucao_final_var, solucao_final_ewma, solucao_final_garch, solucao_final_lpm)
     grafico_risco_retorno(x1,y1,"paretoInicial")
     #grafico_risco_retorno(pontos_x_cvar,pontos_y_cvar, pontos_x_ewma, 
     #pontos_y_ewma,pontos_x_garch,pontos_y_garch, pontos_x_lpm, pontos_y_lpm,"paretoFinal")
     grafico_risco_retorno(pontos_x_cvar, pontos_y_cvar, "paretoFinalCVaR")
+    grafico_risco_retorno(pontos_x_var, pontos_y_var, "paretoFinalVaR")
     grafico_risco_retorno(pontos_x_ewma, pontos_y_ewma, "paretoFinalEWMA")
     grafico_risco_retorno(pontos_x_garch, pontos_y_garch, "paretoFinalGARCH")
     grafico_risco_retorno(pontos_x_lpm, pontos_y_lpm, "paretoFinalLPM")
