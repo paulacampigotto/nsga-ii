@@ -144,29 +144,45 @@ class Carteira:
         return cont
                 
 
+
 def inicializa():    
     
     global listaAtivos
     global lista_ibovespa
+    nomeAtivos = []
+    primeira = True
 
-    nomesArquivos = [f for f in listdir("/home/paula/Documents/IC/nsga-ii/ativos") if isfile(join("/home/paula/Documents/IC/nsga-ii/ativos", f))]
-    
-    #lê os arquivos e armazena os códigos e cotações em listaAtivos
-    for i in nomesArquivos: 
-        with open("ativos/" + i, "r+") as f:
-            linhas = f.readlines()
-            listaCotacoes = []
-            for linha in linhas:
-                aux = linha.split(",")[5]
-                if(aux != 'Adj Close' and aux != 'null' and aux != "\n"):
-                    adj_close = float(aux)
-                    listaCotacoes.append(adj_close)
-            codigoAtivo = i[:5]
-            if(i == "^BVSP.csv"):
-                lista_ibovespa = listaCotacoes.copy()
+    with open("ativos.csv", "r+") as f:
+        linhas = f.readlines()
+        listaCotacoes = []
+        
+        #PERCORRE LINHAS
+        for linha in linhas:
+            valores = linha.split(",")
+            j=-1
+            #PERCORRE CADA ATIVO
+            for valor in valores:
+                if(valores[0] == 'CODIGOS' and valor != valores[0]):
+                    if(valor == 'IBOV\n'):
+                        nome = 'IBOV'
+                        nomeAtivos.append(nome)
+                    else:
+                        nomeAtivos.append(valor)
+            
+                else:
+                    if primeira and valor != 'CODIGOS':
+                        for i in range(len(nomeAtivos)):
+                            listaCotacoes.append([])
+                        primeira = False
+                    if(valor != valores[0] )and valor != '-' and valor != '-\n':
+                        listaCotacoes[j].append(float(valor))
+                    j+=1
+        for i in range(len(nomeAtivos)):
+            codigoAtivo = nomeAtivos[i]
+            if(codigoAtivo == "IBOV"):
+                lista_ibovespa = copy.copy(listaCotacoes[i])
             else:
-                listaAtivos.append(Ativo(codigoAtivo,listaCotacoes))
-
+                listaAtivos.append(Ativo(codigoAtivo,listaCotacoes[i]))
     
         
 def metrica_risco(valor):
@@ -211,7 +227,7 @@ def grafico_risco_retorno(x,y,nome):
     plt.xlabel('Risco')
     plt.ylabel('Retorno')
     plt.title(nome)
-    plt.savefig(nome + '.png')
+    plt.savefig("figuras/"+nome + '.png')
     plt.show()
 
 
@@ -251,7 +267,7 @@ def grafico_tempo(carteira_cvar, carteira_ewma, carteira_garch, carteira_lpm):
     plt.xlabel('Tempo')
     plt.ylabel('Retorno acumulado (%)')
     plt.title("Retorno Acumulado")
-    plt.savefig('MelhorCarteira.png')
+    plt.savefig('figuras/MelhorCarteira.png')
     plt.show()
 
 def otimiza(populacao_filtrada):
@@ -262,10 +278,10 @@ def otimiza(populacao_filtrada):
 
 
 def main():
-
     global populacao
     
     inicializa()
+
     pontos_x_cvar = []
     pontos_y_cvar = []
     solucao_final_cvar = None
@@ -362,6 +378,17 @@ def main():
             pontos_y_lpm = pontos_y
         
 
+    print("CVAR")
+    solucao_final_cvar.printCarteira()
+
+    print("EWMA")
+    solucao_final_ewma.printCarteira()
+
+    print("GARCH")
+    solucao_final_garch.printCarteira()
+
+    print("LPM")
+    solucao_final_lpm.printCarteira()
 
 
     grafico_tempo(solucao_final_cvar, solucao_final_ewma, solucao_final_garch, solucao_final_lpm)

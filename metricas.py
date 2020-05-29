@@ -53,7 +53,7 @@ def lpm(ativo):
         lpm_variance.append(pow((min(pow(retornos[i] - τ, 0),k)),(1/k)))
     return sum(lpm_variance)/len(lpm_variance)
 
-def cvar(ativo):
+def var(ativo):
     ret_ord = retorno(ativo)
     ret_ord.sort()
     total_count = len(ret_ord)
@@ -61,6 +61,17 @@ def cvar(ativo):
     var95 = ret_ord[ceil((1-(95/100))*total_count)]
     var99 = ret_ord[ceil((1-(99/100))*total_count)]
     var999 = ret_ord[ceil((1-(99.9/100))*total_count)]
+
+    return [(var95), (var99), (var999)]
+    
+def cvar(ativo):
+    ret_ord = retorno(ativo)
+    ret_ord.sort()
+    total_count = len(ret_ord)
+
+    # var95 = ret_ord[ceil((1-(95/100))*total_count)]
+    # var99 = ret_ord[ceil((1-(99/100))*total_count)]
+    # var999 = ret_ord[ceil((1-(99.9/100))*total_count)]
 
     cvar95 = -((1/((1-(95/100))*total_count))*soma_aux(ret_ord, ceil((1-(95/100))*total_count)))
     cvar99 = -((1/((1-(99/100))*total_count))*soma_aux(ret_ord, ceil((1-(99/100))*total_count)))
