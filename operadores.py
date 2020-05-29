@@ -48,11 +48,12 @@ def mutacao(populacao):
                     index2 = carteira.getIndexPeloAtivo(novoAtivo2)
                     carteira.setAtivoPeloIndex(index2, (novoAtivo2[0], novoAtivo2[1]+r))
                 else:
-                    novoAtivo1 = random.choice(listaAtivos) #gera um ativo novoAtivo1 para substituir o ativo atual
+                    novoAtivo1 = escolhe_ativo(carteira)
                     carteira.setAtivoPeloIndex(index1, (novoAtivo1, ativo[1]))
-
             index1+=1
+            
     return populacao
+
 
 def selecao(pop):
     popu = pop.copy()
@@ -76,11 +77,8 @@ def selecao(pop):
             p_b = copy.copy(ind_c)
         else:
             p_b = copy.copy(ind_d)
-            
-        # for k in popu:
-        #     if k.getId() == p_b.getId():
-        #         popu.remove(k)
         pares.append((p_a,p_b))
+
     return pares   
 
 
@@ -168,4 +166,5 @@ def filtragem(populacao_entrada, primeira_iteracao):
     for i in pop_linha:
         for j in i:
             pop.append(j)
+
     return pop

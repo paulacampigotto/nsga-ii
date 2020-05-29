@@ -10,6 +10,7 @@ import numpy as np
 import random
 import itertools
 import timeit
+import copy
 
 class Ativo:
     idAtivo = itertools.count()
@@ -142,21 +143,30 @@ class Carteira:
         for i in self.ativos:
             cont += 1
         return cont
+
+
                 
 def inicializa():    
     
-    global listaAtivos
-    global lista_ibovespa
+    global listaAtivos_2015_2018
+    global lista_ibovespa_2015_2018
+    global listaAtivos_2019
+    global lista_ibovespa_2019
     nomeAtivos = []
     primeira = True
+    flag2019 = False
 
     with open("ativos.csv", "r+") as f:
         linhas = f.readlines()
-        listaCotacoes = []
+        listaCotacoes_2015_2018 = []
+        listaCotacoes_2019 = []
         
         #PERCORRE LINHAS
         for linha in linhas:
             valores = linha.split(",")
+            if(valores[0] == '01/01/2019'):
+                flag2019 = True
+                primeira = True
             j=-1
             #PERCORRE CADA ATIVO
             for valor in valores:
@@ -166,50 +176,82 @@ def inicializa():
                         nomeAtivos.append(nome)
                     else:
                         nomeAtivos.append(valor)
-            
+                elif flag2019:
+                    if primeira:
+                        for i in range(len(nomeAtivos)):
+                            listaCotacoes_2019.append([])
+                        primeira = False
+                    elif(valor != valores[0] )and valor != '-' and valor != '-\n':
+                        listaCotacoes_2019[j].append(float(valor))
                 else:
                     if primeira and valor != 'CODIGOS':
                         for i in range(len(nomeAtivos)):
-                            listaCotacoes.append([])
+                            listaCotacoes_2015_2018.append([])
                         primeira = False
-                    if(valor != valores[0] )and valor != '-' and valor != '-\n':
-                        listaCotacoes[j].append(float(valor))
-                    j+=1
+                    elif(valor != valores[0] )and valor != '-' and valor != '-\n':
+                        listaCotacoes_2015_2018[j].append(float(valor))
+                j+=1
+                
+
         for i in range(len(nomeAtivos)):
             codigoAtivo = nomeAtivos[i]
             if(codigoAtivo == "IBOV"):
-                lista_ibovespa = copy.copy(listaCotacoes[i])
+                lista_ibovespa_2015_2018 = copy.copy(listaCotacoes_2015_2018[i])
+                lista_ibovespa_2019 = copy.copy(listaCotacoes_2019[i])
             else:
-                listaAtivos.append(Ativo(codigoAtivo,listaCotacoes[i]))
+                listaAtivos_2015_2018.append(Ativo(codigoAtivo,listaCotacoes_2015_2018[i]))
+                listaAtivos_2019.append(Ativo(codigoAtivo,listaCotacoes_2019[i]))
     
-        
+    
+    # lista_ativos_semestral = []
+    # # index = 0
+    # valor = 123
+    # cont_aux = 0
+    # i=0
+    # for i in range(8):
+    #     lista_ativos_semestral.append([])
+    #     for j in range(len(listaAtivos_2015_2018[0].getCotacoes())):
+    #         lista_ativos_semestral[i] = copy.copy(listaAtivos_2015_2018[][i*123:((i+1)*123)-1])
+    #         cont_aux = ((i+1)*123)
+    #     # index+=1
+    
+    # i-=1
+    # for j in range(cont_aux, len(listaAtivos_2015_2018)):
+    #     lista_ativos_semestral[i].append(listaAtivos_2015_2018[j])
+
+    # print("EAI")
+    # print(len(lista_ativos_semestral))
+    # for i in lista_ativos_semestral:
+    #     for j in i:
+    #         print(j)
+
 def populacao_inicial():
     global populacao
     for j in range(TAM_POP):
         carteira = []
         for i in range(CARDINALIDADE):
-            ativo = (listaAtivos[ativo_aux(carteira)], pesoProporcional(carteira,i)) ##### satisfazer a soma dos pesos = 1
+            ativo = (listaAtivos_2015_2018[ativo_aux(carteira)], pesoProporcional(carteira,i)) ##### satisfazer a soma dos pesos = 1
             carteira.append(ativo)
         populacao.append(Carteira(carteira))
 
 
 def grafico_tempo(carteira_cvar, carteira_var, carteira_ewma, carteira_garch, carteira_lpm):
-    global lista_ibovespa
+    global lista_ibovespa_2019
 
-    cotacoes_cvar = calcula_cotacoes_carteira(carteira_cvar)
-    cotacoes_var = calcula_cotacoes_carteira(carteira_var)
-    cotacoes_ewma = calcula_cotacoes_carteira(carteira_ewma)
-    cotacoes_garch = calcula_cotacoes_carteira(carteira_garch)
-    cotacoes_lpm = calcula_cotacoes_carteira(carteira_lpm)
+    cotacoes_cvar = calcula_cotacoes_carteira_2019(carteira_cvar)
+    cotacoes_var = calcula_cotacoes_carteira_2019(carteira_var)
+    cotacoes_ewma = calcula_cotacoes_carteira_2019(carteira_ewma)
+    cotacoes_garch = calcula_cotacoes_carteira_2019(carteira_garch)
+    cotacoes_lpm = calcula_cotacoes_carteira_2019(carteira_lpm)
 
 
-    plt.plot(range(len(retorno_acumulado(cotacoes_cvar))),retorno_acumulado(cotacoes_cvar),color = '#66ffa3', label = 'CVaR')
-    plt.plot(range(len(retorno_acumulado(cotacoes_var))),retorno_acumulado(cotacoes_var),color = '#ff66c7', label = 'VaR')
-    plt.plot(range(len(retorno_acumulado(cotacoes_ewma))),retorno_acumulado(cotacoes_ewma),color = '#c457ff', label = 'EWMA')
-    plt.plot(range(len(retorno_acumulado(cotacoes_garch))),retorno_acumulado(cotacoes_garch), color = '#ffeb57', label = 'GARCH')
-    plt.plot(range(len(retorno_acumulado(cotacoes_lpm))),retorno_acumulado(cotacoes_lpm),color = '#66c2ff', label = 'LPM')
+    plt.plot(range(len(retorno_acumulado(cotacoes_cvar))),retorno_acumulado(cotacoes_cvar),linestyle = 'solid', color = '#66ffa3', label = 'CVaR')
+    plt.plot(range(len(retorno_acumulado(cotacoes_var))),retorno_acumulado(cotacoes_var), linestyle = (0, (3, 1, 1, 1)), color = '#ff66c7', label = 'VaR')
+    plt.plot(range(len(retorno_acumulado(cotacoes_ewma))),retorno_acumulado(cotacoes_ewma), linestyle = 'dashdot',color = '#c457ff', label = 'EWMA')
+    plt.plot(range(len(retorno_acumulado(cotacoes_garch))),retorno_acumulado(cotacoes_garch), linestyle = 'dashed', color = '#ffeb57', label = 'GARCH')
+    plt.plot(range(len(retorno_acumulado(cotacoes_lpm))),retorno_acumulado(cotacoes_lpm), linestyle = 'dotted',color = '#66c2ff', label = 'LPM')
     
-    plt.plot(range(len(retorno_acumulado(lista_ibovespa))), retorno_acumulado(lista_ibovespa), color = 'black', label = 'Ibovespa')
+    plt.plot(range(len(retorno_acumulado(lista_ibovespa_2019))), retorno_acumulado(lista_ibovespa_2019), color = 'black', label = 'Ibovespa')
     plt.legend()
     plt.xlabel('Tempo')
     plt.ylabel('Retorno acumulado (%)')
@@ -338,7 +380,7 @@ def main():
     solucao_final_cvar.printCarteira()
     
     print("VAR")
-    solucao_final_cvar.printCarteira()
+    solucao_final_var.printCarteira()
 
     print("EWMA")
     solucao_final_ewma.printCarteira()
@@ -349,6 +391,7 @@ def main():
     print("LPM")
     solucao_final_lpm.printCarteira()
 
+ 
 
     grafico_tempo(solucao_final_cvar, solucao_final_var, solucao_final_ewma, solucao_final_garch, solucao_final_lpm)
     grafico_risco_retorno(x1,y1,"paretoInicial")
