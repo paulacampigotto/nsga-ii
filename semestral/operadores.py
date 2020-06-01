@@ -1,6 +1,8 @@
 from globais import *
 from aux import *
 from nsga2 import *
+from metricas import *
+from grafico import *
 from math import ceil
 import random
 import copy
@@ -139,7 +141,7 @@ def crowding_distance(fronteira):
     return pop_ord
 
 def filtragem(populacao_entrada, primeira_iteracao):
-    pop = populacao_entrada.copy()
+    pop = copy.copy(populacao_entrada)
     if primeira_iteracao:
         p = len(pop) 
     else:        

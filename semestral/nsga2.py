@@ -1,5 +1,6 @@
 from operadores import *
 from aux import *
+from grafico import *
 from globais import *
 from metricas import *
 from os import listdir
@@ -197,38 +198,15 @@ def le_arquivo_retorna_lista_ativos(data_inicial, data_final, ibovespa):
      
 
 def populacao_inicial():
-    global populacao
+    populacao = []
     for j in range(TAM_POP):
         carteira = []
         for i in range(CARDINALIDADE):
             ativo = (lista_ativos[ativo_aux(carteira)], pesoProporcional(carteira,i)) ##### satisfazer a soma dos pesos = 1
             carteira.append(ativo)
         populacao.append(Carteira(carteira))
+    return populacao
 
-
-def grafico_tempo(carteira_cvar, carteira_var, carteira_ewma, carteira_garch, carteira_lpm):
-    global lista_ibovespa_2019
-
-    cotacoes_cvar = calcula_cotacoes_carteira_2019(carteira_cvar)
-    cotacoes_var = calcula_cotacoes_carteira_2019(carteira_var)
-    cotacoes_ewma = calcula_cotacoes_carteira_2019(carteira_ewma)
-    cotacoes_garch = calcula_cotacoes_carteira_2019(carteira_garch)
-    cotacoes_lpm = calcula_cotacoes_carteira_2019(carteira_lpm)
-
-
-    plt.plot(range(len(retorno_acumulado(cotacoes_cvar))),retorno_acumulado(cotacoes_cvar),linestyle = 'solid', color = '#66ffa3', label = 'CVaR')
-    plt.plot(range(len(retorno_acumulado(cotacoes_var))),retorno_acumulado(cotacoes_var), linestyle = (0, (3, 1, 1, 1)), color = '#ff66c7', label = 'VaR')
-    plt.plot(range(len(retorno_acumulado(cotacoes_ewma))),retorno_acumulado(cotacoes_ewma), linestyle = 'dashdot',color = '#c457ff', label = 'EWMA')
-    plt.plot(range(len(retorno_acumulado(cotacoes_garch))),retorno_acumulado(cotacoes_garch), linestyle = 'dashed', color = '#ffeb57', label = 'GARCH')
-    plt.plot(range(len(retorno_acumulado(cotacoes_lpm))),retorno_acumulado(cotacoes_lpm), linestyle = 'dotted',color = '#66c2ff', label = 'LPM')
-    
-    plt.plot(range(len(retorno_acumulado(lista_ibovespa_2019))), retorno_acumulado(lista_ibovespa_2019), color = 'black', label = 'Ibovespa')
-    plt.legend()
-    plt.xlabel('Tempo')
-    plt.ylabel('Retorno acumulado (%)')
-    plt.title("Retorno Acumulado")
-    plt.savefig('graficos/MelhorCarteira.png')
-    plt.show()
 
 def otimiza(populacao_filtrada, lista_ativos):
     # global populacao
@@ -239,29 +217,42 @@ def otimiza(populacao_filtrada, lista_ativos):
 
 def main():
 
-    global populacao, lista_ativos, lista_ativos_2019, lista_ibovespa_2019
+    global lista_ativos
+    lista_ativos_proximo_semestre = [] 
+    lista_ibovespa_proximo_semestre = []
 
     lista_ativos_semestral = []
-    datas = ['01/01/2015', '30/06/2015', '01/07/2015', '31/12/2015', '01/01/2016', '30/06/2016', '01/07/2016', '31/12/2016', '01/01/2017', '30/06/2017', '01/07/2017', '31/12/2017', '01/01/2018', '30/06/2018', '01/07/2018', '31/12/2018']
+    lista_ibovespa_semestral = []
+
+    datas = ['01/07/2016', '31/12/2016', '01/01/2017', '30/06/2017', 
+             '01/07/2017', '31/12/2017', '01/01/2018', '30/06/2018', 
+             '01/07/2018', '31/12/2018', '01/01/2019', '30/06/2019',
+             '01/07/2019', '31/12/2019']
+
     
+
     #Separa as cotações dos ativos em semestres (lista de matrizes)
     for i in range(0,len(datas),2):
         lista_ativos_semestral.append(le_arquivo_retorna_lista_ativos(datas[i], datas[i+1], False))
+        lista_ibovespa_semestral.append(le_arquivo_retorna_lista_ativos(datas[i], datas[i+1], True))
+   
 
-    lista_ativos_2019 = le_arquivo_retorna_lista_ativos('01/01/2019', '31/12/2019', False)
-    lista_ibovespa_2019 = le_arquivo_retorna_lista_ativos('01/01/2019', '31/12/2019', True)
-
+    pontos_x_por_semestre = []
+    pontos_y_por_semestre = []
+    solucao_final_por_semestre = []
     
-
     # ITERAÇÕES POR SEMESTRE
-    for semestre in range(len(lista_ativos_semestral)):
-
+    for semestre in range(len(lista_ativos_semestral)-1):
+    
         lista_ativos = copy.copy(lista_ativos_semestral[semestre])
-
+        lista_ibovespa = copy.copy(lista_ibovespa_semestral[semestre])
+        lista_ativos_proximo_semestre = copy.copy(lista_ativos_semestral[semestre+1])
+        lista_ibovespa_proximo_semestre = copy.copy(lista_ibovespa_semestral[semestre+1])
 
         pontos_x = []
         pontos_y = []
         solucao_final = []
+        
 
         #pontos = [cvar, var, ewma, garch, lpm]
         
@@ -270,8 +261,8 @@ def main():
             pontos_y.append([])
             solucao_final.append(None)
 
+        
         for risco in range(QUANTIDADE_METRICAS):
-            
             lista_ativos = metrica_risco(lista_ativos,risco)
             
             primeira_execucao = True  
@@ -284,10 +275,8 @@ def main():
                 start = timeit.default_timer()  
 
                 #INICIALIZAÇÃO
-                populacao = []
-                populacao_inicial()
+                populacao = populacao_inicial()
                 pop_filtrada = filtragem(populacao, True)
-
                 #GRAFICO INICIAL 
                 x1 = []
                 y1 = []
@@ -295,18 +284,16 @@ def main():
                 for carteira in pop_filtrada:
                     x1.append(carteira.getRisco())
                     y1.append(carteira.getRetorno())
-                # for i in range(len(x1)):
-                #     print("x = ",x1[i], " y = ", y1[i])
                 #ITERAÇÕES
                 cont=0
                 for i in range(ITERACOES):
-                    print("RISCO: " + str(risco) + " EXEC: " + str(j) + " ITERACOES: " + str(cont))
+                    print("SEMESTRE: "  + str(semestre) + " RISCO: " + str(risco) + " EXEC: " + str(j) + " ITERACOES: " + str(cont))
                     cont+=1
                     pop = otimiza(pop_filtrada, lista_ativos)
                     pop_filtrada = pop.copy()
                     solucao_parcial = melhor_carteira(pop_filtrada)
-                    if solucao_final[semestre] == None or solucao_parcial.fitness() > solucao_final[semestre].fitness():
-                        solucao_final[semestre] = solucao_parcial
+                    if solucao_final[risco] == None or solucao_parcial.fitness() > solucao_final[risco].fitness():
+                        solucao_final[risco] = solucao_parcial
 
                 #GRAFICO FINAL DA ITERAÇÃO
                 x2 = []
@@ -319,15 +306,13 @@ def main():
                     x = copy.copy(x2)
                     y = copy.copy(y2)
                     primeira_execucao = False
-
                 else:
                     for i in range(len(pop_filtrada)):
                         x[i] += x2[i]
                         y[i] += y2[i]
-                
 
                 stop = timeit.default_timer()
-                print('******Time: ', stop - start)  
+                #print('******Time: ', stop - start)  
 
             #GRAFICO FINAL DA EXECUÇÃO
             for j in range(len(pop_filtrada)):
@@ -335,14 +320,15 @@ def main():
                 y[j]/=EXECUCOES
             
             pontos_x[risco] = x
-            pontos_y[risco] = y                       
-
-    for i in solucao_final:
-        i.printCarteira()
-        print()
+            pontos_y[risco] = y
+        
+        pontos_x_por_semestre.append(pontos_x)
+        pontos_y_por_semestre.append(pontos_y)
+        solucao_final_por_semestre.append(solucao_final)
 
  
-    grafico_tempo(solucao_final[0], solucao_final[1], solucao_final[2], solucao_final[3], solucao_final[4])
+    grafico_tempo_barras(solucao_final_por_semestre, lista_ativos_proximo_semestre)
+    grafico_tempo(solucao_final, lista_ativos_proximo_semestre, lista_ibovespa_proximo_semestre)
     grafico_risco_retorno(pontos_x[0], pontos_y[0], "paretoFinalCVaR")
     grafico_risco_retorno(pontos_x[1], pontos_y[1], "paretoFinalVaR")
     grafico_risco_retorno(pontos_x[2], pontos_y[2], "paretoFinalEWMA")
