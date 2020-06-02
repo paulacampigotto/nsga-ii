@@ -248,7 +248,7 @@ def grafico_tempo(carteira_cvar, carteira_var, carteira_ewma, carteira_garch, ca
     plt.plot(range(len(retorno_acumulado(cotacoes_cvar))),retorno_acumulado(cotacoes_cvar),linestyle = 'solid', color = '#66ffa3', label = 'CVaR')
     plt.plot(range(len(retorno_acumulado(cotacoes_var))),retorno_acumulado(cotacoes_var), linestyle = (0, (3, 1, 1, 1)), color = '#ff66c7', label = 'VaR')
     plt.plot(range(len(retorno_acumulado(cotacoes_ewma))),retorno_acumulado(cotacoes_ewma), linestyle = 'dashdot',color = '#c457ff', label = 'EWMA')
-    plt.plot(range(len(retorno_acumulado(cotacoes_garch))),retorno_acumulado(cotacoes_garch), linestyle = 'dashed', color = '#ffeb57', label = 'GARCH')
+    plt.plot(range(len(retorno_acumulado(cotacoes_garch))),retorno_acumulado(cotacoes_garch), linestyle = 'dashed', color = 'r', label = 'GARCH')
     plt.plot(range(len(retorno_acumulado(cotacoes_lpm))),retorno_acumulado(cotacoes_lpm), linestyle = 'dotted',color = '#66c2ff', label = 'LPM')
     
     plt.plot(range(len(retorno_acumulado(lista_ibovespa_2017_2019))), retorno_acumulado(lista_ibovespa_2017_2019), color = 'black', label = 'Ibovespa')
