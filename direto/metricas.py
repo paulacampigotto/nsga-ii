@@ -86,7 +86,7 @@ def cvar(ativo):
 def metrica_risco(valor):
 
     #calcula o risco e o retorno de cada ativo e atualiza os valores de listaAtivos
-    for i in listaAtivos_2015_2018:
+    for i in lista_ativos_2015_2016:
         if(valor == 0):
             ris = cvar(i.getCotacoes())[1] #[0] = CVaR 95% | [1] = CVaR 99% | [2] = CVaR 99.9%
         elif(valor == 1):

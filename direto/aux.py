@@ -83,7 +83,7 @@ def melhor_carteira(pop):
     return carteira
 
 
-def calcula_cotacoes_carteira_2015_2018(carteira):
+def calcula_cotacoes_carteira_2015_2016(carteira):
     numero_cotacoes = len(carteira.getAtivoPeloIndex(0)[0].getCotacoes())
     print(numero_cotacoes)
     matriz = []
@@ -102,17 +102,17 @@ def calcula_cotacoes_carteira_2015_2018(carteira):
     return y
 
 def encontraIndexAtivo(codigo_ativo):
-    global listaAtivos_2019
+    global lista_ativos_2017_2019
     index = 0
-    for i in listaAtivos_2019:
+    for i in lista_ativos_2017_2019:
         if(i.getCodigo() == codigo_ativo):
             return index
         index += 1
         
 
-def calcula_cotacoes_carteira_2019(carteira):
-    global listaAtivos_2019
-    numero_cotacoes = len(listaAtivos_2019[0].getCotacoes())
+def calcula_cotacoes_carteira_2017_2019(carteira):
+    global lista_ativos_2017_2019
+    numero_cotacoes = len(lista_ativos_2017_2019[0].getCotacoes())
     # print(numero_cotacoes)
     matriz = []
     for i in range(carteira.cardinalidade()):
@@ -121,7 +121,7 @@ def calcula_cotacoes_carteira_2019(carteira):
     for index_ativo in range(carteira.cardinalidade()):
         ativo = carteira.getAtivoPeloIndex(index_ativo)
         for cotacao in range(numero_cotacoes):
-            matriz[index_ativo][cotacao] +=  listaAtivos_2019[encontraIndexAtivo(ativo[0].getCodigo())].getCotacoes()[cotacao] * ativo[1]
+            matriz[index_ativo][cotacao] +=  lista_ativos_2017_2019[encontraIndexAtivo(ativo[0].getCodigo())].getCotacoes()[cotacao] * ativo[1]
 
     y = [0]*numero_cotacoes
     for i in range(numero_cotacoes):
@@ -144,7 +144,7 @@ def grafico_risco_retorno(x,y,nome):
 def escolhe_ativo(carteira):
     verifica = True# 
     while(verifica):
-        novoAtivo1 = random.choice(listaAtivos_2015_2018) #gera um ativo novoAtivo1 para substituir o ativo atual
+        novoAtivo1 = random.choice(lista_ativos_2015_2016) #gera um ativo novoAtivo1 para substituir o ativo atual
         for i in carteira.getAtivos():
             if i[0].getCodigo() == novoAtivo1.getCodigo():
                 verifica = False

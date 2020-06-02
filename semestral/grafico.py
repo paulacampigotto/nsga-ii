@@ -19,7 +19,7 @@ def grafico_tempo(carteiras, lista_ativos_proximo_semestre, lista_ibovespa_proxi
     for i in carteiras:
         cotacoes.append(calcula_cotacoes_carteira_prox_semestre(i, lista_ativos_proximo_semestre))
     
-    plt.plot(range(len(retorno_acumulado(cotacoes[0]))),retorno_acumulado(cotacoes[0]),linestyle = 'solid', color = '#6f6fa3', label = 'CVaR')
+    plt.plot(range(len(retorno_acumulado(cotacoes[0]))),retorno_acumulado(cotacoes[0]),linestyle = 'solid', color = '#66ff66', label = 'CVaR')
     plt.plot(range(len(retorno_acumulado(cotacoes[1]))),retorno_acumulado(cotacoes[1]), linestyle = (0, (3, 1, 1, 1)), color = '#ff66c7', label = 'VaR')
     plt.plot(range(len(retorno_acumulado(cotacoes[2]))),retorno_acumulado(cotacoes[2]), linestyle = 'dashdot',color = '#c457ff', label = 'EWMA')
     plt.plot(range(len(retorno_acumulado(cotacoes[3]))),retorno_acumulado(cotacoes[3]), linestyle = 'dashed', color = 'red', label = 'GARCH')
@@ -101,17 +101,17 @@ def grafico_tempo_barras(carteiras_semestre, lista_ativos_proximo_semestre):
 
     rects1 = plt.bar(index, retornos_por_risco[0], bar_width,
     alpha=opacity,
-    color='g',
+    color='#66ff66',
     label='CVaR')
 
     rects2 = plt.bar(index + bar_width, retornos_por_risco[1], bar_width,
     alpha=opacity,
-    color='purple',
+    color='#ff66c7',
     label='VaR')
 
     rects2 = plt.bar(index + bar_width*2 , retornos_por_risco[2], bar_width,
     alpha=opacity,
-    color='b',
+    color='#c457ff',
     label='EWMA')
 
     rects2 = plt.bar(index + bar_width*3, retornos_por_risco[3], bar_width,
@@ -121,7 +121,7 @@ def grafico_tempo_barras(carteiras_semestre, lista_ativos_proximo_semestre):
     
     rects2 = plt.bar(index + bar_width*4, retornos_por_risco[4], bar_width,
     alpha=opacity,
-    color='k',
+    color='#66c2ff',
     label='LPM')
 
     plt.xlabel('Tempo (semestre)')
