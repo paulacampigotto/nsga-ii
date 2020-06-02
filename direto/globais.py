@@ -1,15 +1,15 @@
-TAM_POP = 50
+TAM_POP = 10
 CARDINALIDADE = 9
-ITERACOES = 50
-PROBABILIDADE_MUTACAO = 0.1
-EXECUCOES = 15
+ITERACOES = 10
+EXECUCOES = 2
 QUANTIDADE_ATIVOS = 62
 QUANTIDADE_METRICAS = 5
-lista_ativos_2015_2016 = []
-lista_ibovespa_2015_2016 = []
-lista_ativos_2017_2019 = []
-lista_ibovespa_2017_2019 = []
-populacao = []
+PROBABILIDADE_MUTACAO = 0.1
+
+lista_ativos = []
+lista_ibovespa = []
+lista_ativos_proximo_semestre = []
+lista_ibovespa_proximo_semestre = []
 
 ### EWMA
 λ = 0.94

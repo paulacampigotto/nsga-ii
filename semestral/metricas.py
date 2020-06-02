@@ -29,6 +29,20 @@ def retorno_acumulado(ativo):
             retorno.append(retorno[i-1]+((ativo[i+1]  / ativo[i]) -1 )* 100)
     return retorno
 
+
+def retorno_acumulado_barras(ativo,proxima_cotacao):
+    retorno = []
+    x = 0
+    for i in range(len(ativo) -1):
+        if(i == 0):
+            retorno.append(((ativo[i+1]  / ativo[i]) -1 )* 100)
+        else:    
+            retorno.append(retorno[i-1]+((ativo[i+1]  / ativo[i]) -1 )* 100)
+            x = ativo[i+1]
+    tam = len(retorno)-1
+    retorno.append(retorno[tam] + ((proxima_cotacao / x) -1 ) * 100)
+    return retorno
+
 def ewma(ativo):
     retornos = retorno(ativo)
     ewma_variance = []

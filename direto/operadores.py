@@ -1,6 +1,8 @@
 from globais import *
 from aux import *
 from nsga2 import *
+from metricas import *
+from grafico import *
 from math import ceil
 import random
 import copy
@@ -34,8 +36,8 @@ def crossover(pop):
     
     return novaPop
 
-def mutacao(populacao):
-    for carteira in populacao:
+def mutacao(pop, lista_ativos):
+    for carteira in pop:
         index1 = 0
         for ativo in carteira.getAtivos():
             probabili = random.random()
@@ -48,11 +50,11 @@ def mutacao(populacao):
                     index2 = carteira.getIndexPeloAtivo(novoAtivo2)
                     carteira.setAtivoPeloIndex(index2, (novoAtivo2[0], novoAtivo2[1]+r))
                 else:
-                    novoAtivo1 = escolhe_ativo(carteira)
+                    novoAtivo1 = escolhe_ativo(carteira, lista_ativos)
                     carteira.setAtivoPeloIndex(index1, (novoAtivo1, ativo[1]))
             index1+=1
             
-    return populacao
+    return pop
 
 
 def selecao(pop):
@@ -139,7 +141,7 @@ def crowding_distance(fronteira):
     return pop_ord
 
 def filtragem(populacao_entrada, primeira_iteracao):
-    pop = populacao_entrada.copy()
+    pop = copy.copy(populacao_entrada)
     if primeira_iteracao:
         p = len(pop) 
     else:        

@@ -27,6 +27,7 @@ def grafico_tempo(carteiras, lista_ativos_proximo_semestre, lista_ibovespa_proxi
     plt.plot(range(len(retorno_acumulado(cotacoes[4]))),retorno_acumulado(cotacoes[4]), linestyle = 'dotted',color = '#66c2ff', label = 'LPM')
     
     plt.plot(range(len(retorno_acumulado(lista_ibovespa_proximo_semestre))), retorno_acumulado(lista_ibovespa_proximo_semestre), color = 'black', label = 'Ibovespa')
+   
     plt.legend()
     plt.xlabel('Tempo')
     plt.ylabel('Retorno acumulado (%)')
@@ -59,6 +60,7 @@ def calcula_cotacoes_carteira_prox_semestre(carteira, lista):
             
     return y
 
+
 def desvio_padrao(lista):
     n = len(lista)
     media = sum(lista)/n
@@ -69,64 +71,64 @@ def desvio_padrao(lista):
     cont = math.sqrt(cont)
     return cont
 
-
-def grafico_tempo_barras(carteiras_semestre, lista_ativos_proximo_semestre):
+def grafico_tempo_barras(carteiras_semestre, lista_ativos_proximo_semestre, lista_ativos_ibovespa):
     
     cotacoes_por_semestre = []
     
-    for semestre in range(len(carteiras_semestre)):
+    #percorre os semestres (6)
+    for semestre in range(len(lista_ativos_proximo_semestre)):
         cotacoes_por_semestre.append([])
-        for carteira in carteiras_semestre[semestre]:
-            cotacoes_por_semestre[semestre].append(calcula_cotacoes_carteira_prox_semestre(carteira, lista_ativos_proximo_semestre))
+        #percorre as carteiras (5)
+        for carteira in range(len(carteiras_semestre)):
+            cotacoes_por_semestre[semestre].append(calcula_cotacoes_carteira_prox_semestre(carteiras_semestre[carteira], lista_ativos_proximo_semestre[semestre]))
     
+
     retorno_acumulado_por_semestre = []
-    
 
     #SEPARA EM UMA LISTA DE SEMESTRES
-    semestre = 0
-    for cotacoes in cotacoes_por_semestre:
+    index = 0
+    for semestre in cotacoes_por_semestre:
         retorno_acumulado_por_semestre.append([])
-        for cotacao in cotacoes:
-            ret = retorno_acumulado(cotacao)
-            retorno_acumulado_por_semestre[semestre].append(ret[len(ret) - 1])
-        semestre += 1
+        contRisco = 0
+        for risco in semestre:
+            if(index >= len(cotacoes_por_semestre)-1):
+                ret = retorno_acumulado(risco)
+                retorno_acumulado_por_semestre[index].append(ret[len(ret) - 1])
+            else:    
+                ret = retorno_acumulado_barras(risco, cotacoes_por_semestre[index+1][contRisco][0])
+                retorno_acumulado_por_semestre[index].append(ret[len(ret) - 1])
+            contRisco += 1
+        index += 1
     
-
     #SEPARA EM UMA LISTA DE METRICAS DE RISCO
     retornos_por_risco = []
     cont = 0
-
     for i in range(len(retorno_acumulado_por_semestre[cont])):
         retornos_por_risco.append([])
         for j in retorno_acumulado_por_semestre:
             retornos_por_risco[cont].append(j[i])
         cont+=1
-
-    for i in retornos_por_risco:
-        print(i)
-
-
+    
     #SALVA EM ARQUIVO O RETORNO ACUMULADO DE TODOS OS SEMESTRES
     lista_soma_acumulada = []
     lista_desvio_padrao = []
     for semestre in retornos_por_risco:
         lista_soma_acumulada.append(sum(semestre))
         lista_desvio_padrao.append(desvio_padrao(semestre))
+
     
     arquivo = open("retorno_acumulado.txt", "w+")
     cont = 0
     for i in lista_soma_acumulada:
         if(cont == len(lista_soma_acumulada) - 1):
-            arquivo.write(str(i) + ',' + str(lista_desvio_padrao[cont]))
+            arquivo.write(str(i) + "," + str(lista_desvio_padrao[cont]))
         else:
-            arquivo.write(str(i) + "," + str(lista_desvio_padrao[cont]) + ',')
+            arquivo.write(str(i) + "," + str(lista_desvio_padrao[cont]) + ",")
         cont+=1
+    arquivo.close()    
     
-    arquivo.close()
-
-    n_groups = len(carteiras_semestre)
-
-
+                
+    n_groups = len(lista_ativos_proximo_semestre)
     # create plot
     fig, ax = plt.subplots()
     index = np.arange(n_groups)
@@ -157,13 +159,26 @@ def grafico_tempo_barras(carteiras_semestre, lista_ativos_proximo_semestre):
     alpha=opacity,
     color='#333333',
     label='LPM', hatch= "")
-
+    
     plt.xlabel('Tempo (semestre)')
     plt.ylabel('Retorno acumulado')
-    plt.title('Retorno acumulado semestral')
-    plt.xticks(index + bar_width+.15, ('1', '2', '3', '4', '5', '6'))
+    plt.title('Retorno acumulado direto')
+    plt.xticks(index + bar_width+.15, ['1', '2', '3', '4', '5', '6'])
     plt.legend()
 
     plt.tight_layout()
     plt.savefig('graficos/MelhorCarteiraSemestre.png')
     plt.show()
+
+
+def grafico_risco_retorno(x,y,nome):
+    
+    plt.scatter(x, y, marker = '*', color = '#ff66c7')
+    plt.axis([min(x), max(x), min(y), max(y)])
+    plt.xlabel('Risco')
+    plt.ylabel('Retorno')
+    plt.title(nome)
+    plt.savefig("graficos/"+nome + '.png')
+    plt.show()
+
+

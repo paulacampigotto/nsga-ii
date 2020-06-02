@@ -1,5 +1,6 @@
 from globais import *
 from nsga2 import *
+from grafico import *
 from operadores import *
 from metricas import *
 from os.path import isfile, join
@@ -10,6 +11,7 @@ import numpy as np
 import itertools
 import random
 import timeit
+import math
 
 def pesoProporcional(carteira,i):
     soma = 0.0
@@ -83,7 +85,17 @@ def melhor_carteira(pop):
     return carteira
 
 
-def calcula_cotacoes_carteira_2015_2016(carteira):
+def desvio_padrao(lista):
+    n = len(lista)
+    media = sum(lista)/n
+    cont = 0
+    for i in lista:
+        cont += (abs(i - media))**2
+    cont/=n
+    cont = math.sqrt(cont)
+    return cont
+
+def calcula_cotacoes_carteira_2015_2018(carteira):
     numero_cotacoes = len(carteira.getAtivoPeloIndex(0)[0].getCotacoes())
     print(numero_cotacoes)
     matriz = []
@@ -101,50 +113,11 @@ def calcula_cotacoes_carteira_2015_2016(carteira):
             
     return y
 
-def encontraIndexAtivo(codigo_ativo):
-    global lista_ativos_2017_2019
-    index = 0
-    for i in lista_ativos_2017_2019:
-        if(i.getCodigo() == codigo_ativo):
-            return index
-        index += 1
-        
 
-def calcula_cotacoes_carteira_2017_2019(carteira):
-    global lista_ativos_2017_2019
-    numero_cotacoes = len(lista_ativos_2017_2019[0].getCotacoes())
-    # print(numero_cotacoes)
-    matriz = []
-    for i in range(carteira.cardinalidade()):
-        matriz.append([0]*numero_cotacoes)
-
-    for index_ativo in range(carteira.cardinalidade()):
-        ativo = carteira.getAtivoPeloIndex(index_ativo)
-        for cotacao in range(numero_cotacoes):
-            matriz[index_ativo][cotacao] +=  lista_ativos_2017_2019[encontraIndexAtivo(ativo[0].getCodigo())].getCotacoes()[cotacao] * ativo[1]
-
-    y = [0]*numero_cotacoes
-    for i in range(numero_cotacoes):
-        for ativo in range(len(matriz)):
-            y[i] += matriz[ativo][i]
-            
-    return y
-
-
-def grafico_risco_retorno(x,y,nome):
-    
-    plt.scatter(x, y, marker = '*', color = '#ff66c7')
-    plt.axis([min(x), max(x), min(y), max(y)])
-    plt.xlabel('Risco')
-    plt.ylabel('Retorno')
-    plt.title(nome)
-    plt.savefig("graficos/"+nome + '.png')
-    plt.show()
-
-def escolhe_ativo(carteira):
-    verifica = True# 
+def escolhe_ativo(carteira, lista_ativos):
+    verifica = True
     while(verifica):
-        novoAtivo1 = random.choice(lista_ativos_2015_2016) #gera um ativo novoAtivo1 para substituir o ativo atual
+        novoAtivo1 = random.choice(lista_ativos) #gera um ativo novoAtivo1 para substituir o ativo atual
         for i in carteira.getAtivos():
             if i[0].getCodigo() == novoAtivo1.getCodigo():
                 verifica = False

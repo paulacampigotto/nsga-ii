@@ -11,6 +11,7 @@ import numpy as np
 import itertools
 import random
 import timeit
+import math
 
 def pesoProporcional(carteira,i):
     soma = 0.0
@@ -103,9 +104,15 @@ def calcula_cotacoes_carteira_2015_2018(carteira):
     return y
 
 
-        
-
-
+def desvio_padrao(lista):
+    n = len(lista)
+    media = sum(lista)/n
+    cont = 0
+    for i in lista:
+        cont += (abs(i - media))**2
+    cont/=n
+    cont = math.sqrt(cont)
+    return cont
 
 
 def grafico_risco_retorno(x,y,nome):

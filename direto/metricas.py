@@ -3,6 +3,7 @@ from nsga2 import *
 from operadores import *
 from aux import *
 from globais import *
+from grafico import *
 from os import listdir
 from os.path import isfile, join
 from pprint import pprint
@@ -26,6 +27,20 @@ def retorno_acumulado(ativo):
             retorno.append(((ativo[i+1]  / ativo[i]) -1 )* 100)
         else:    
             retorno.append(retorno[i-1]+((ativo[i+1]  / ativo[i]) -1 )* 100)
+
+    return retorno
+
+def retorno_acumulado_barras(ativo,proxima_cotacao):
+    retorno = []
+    x = 0
+    for i in range(len(ativo) -1):
+        if(i == 0):
+            retorno.append(((ativo[i+1]  / ativo[i]) -1 )* 100)
+        else:    
+            retorno.append(retorno[i-1]+((ativo[i+1]  / ativo[i]) -1 )* 100)
+            x = ativo[i+1]
+    tam = len(retorno)-1
+    retorno.append(retorno[tam] + ((proxima_cotacao / x) -1 ) * 100)
     return retorno
 
 def ewma(ativo):
@@ -83,20 +98,22 @@ def cvar(ativo):
     return [(cvar95), (cvar99), (cvar999)]
 
 
-def metrica_risco(valor):
+def metrica_risco(lista_ativos, valor):
 
     #calcula o risco e o retorno de cada ativo e atualiza os valores de listaAtivos
-    for i in lista_ativos_2015_2016:
+    for i in lista_ativos:
         if(valor == 0):
             ris = cvar(i.getCotacoes())[1] #[0] = CVaR 95% | [1] = CVaR 99% | [2] = CVaR 99.9%
         elif(valor == 1):
-            ris = ewma(i.getCotacoes())
-        elif(valor == 2):
-            ris = garch(i.getCotacoes())
-        elif(valor == 3):
             ris = var(i.getCotacoes())[1]
+        elif(valor == 2):
+            ris = ewma(i.getCotacoes())
+        elif(valor == 3):
+            ris = garch(i.getCotacoes())
         elif(valor == 4):
             ris = lpm(i.getCotacoes())
         i.setRisco(ris)
         ret = sum(retorno(i.getCotacoes()))/len(i.getCotacoes())
         i.setRetorno(ret)
+
+    return lista_ativos
