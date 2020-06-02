@@ -131,4 +131,5 @@ def grafico_tempo_barras(carteiras_semestre, lista_ativos_proximo_semestre):
     plt.legend()
 
     plt.tight_layout()
+    plt.savefig('graficos/MelhorCarteiraSemestre.png')
     plt.show()
