@@ -1,9 +1,9 @@
-
 from nsga2 import *
 from operadores import *
-from aux import *
+import aux as aux
 from globais import *
 from grafico import *
+from classes import *
 from os import listdir
 from os.path import isfile, join
 from pprint import pprint
@@ -14,37 +14,8 @@ import itertools
 import random
 import timeit
 
-def retorno(ativo):
-    retorno = []
-    for i in range(len(ativo) -1):
-        retorno.append((ativo[i+1] - ativo[i]) / ativo[i])
-    return retorno
-
-def retorno_acumulado(ativo):
-    retorno = []
-    for i in range(len(ativo) -1):
-        if(i == 0):
-            retorno.append(((ativo[i+1]  / ativo[i]) -1 )* 100)
-        else:    
-            retorno.append(retorno[i-1]+((ativo[i+1]  / ativo[i]) -1 )* 100)
-    return retorno
-
-
-def retorno_acumulado_barras(ativo,proxima_cotacao):
-    retorno = []
-    x = 0
-    for i in range(len(ativo) -1):
-        if(i == 0):
-            retorno.append(((ativo[i+1]  / ativo[i]) -1 )* 100)
-        else:    
-            retorno.append(retorno[i-1]+((ativo[i+1]  / ativo[i]) -1 )* 100)
-            x = ativo[i+1]
-    tam = len(retorno)-1
-    retorno.append(retorno[tam] + ((proxima_cotacao / x) -1 ) * 100)
-    return retorno
-
 def ewma(ativo):
-    retornos = retorno(ativo)
+    retornos = aux.retorno(ativo)
     ewma_variance = []
     ewma_variance.append(abs(retornos[0]))
     for i in range(1,len(retornos)):
@@ -52,16 +23,16 @@ def ewma(ativo):
     return sum(ewma_variance)/len(ewma_variance)
 
 def garch(ativo):
-    retornos = retorno(ativo)
+    retornos = aux.retorno(ativo)
     garch_variance = []
     garch_variance.append(abs(retornos[0]))
     for i in range(1,len(retornos)):
         garch_variance.append(ω + ( α * abs(retornos[i]) ) + 
-        ( β * abs(garch_variance[i-1]) ))
+        (β * abs(garch_variance[i-1]) ))
     return sum(garch_variance)/len(garch_variance)
     
 def lpm(ativo):
-    retornos = retorno(ativo)
+    retornos = aux.retorno(ativo)
     lpm_variance = []
     lpm_variance.append(abs(retornos[0]))
     for i in range(1,len(retornos)):
@@ -69,7 +40,7 @@ def lpm(ativo):
     return sum(lpm_variance)/len(lpm_variance)
 
 def var(ativo):
-    ret_ord = retorno(ativo)
+    ret_ord = aux.retorno(ativo)
     ret_ord.sort()
     total_count = len(ret_ord)
 
@@ -87,7 +58,7 @@ def soma_aux(retorno, indice):
     return s
 
 def cvar(ativo):
-    ret_ord = retorno(ativo)
+    ret_ord = aux.retorno(ativo)
     ret_ord.sort()
     total_count = len(ret_ord)
 
@@ -113,7 +84,7 @@ def metrica_risco(lista_ativos, valor):
         elif(valor == 4):
             ris = lpm(i.getCotacoes())
         i.setRisco(ris)
-        ret = sum(retorno(i.getCotacoes()))/len(i.getCotacoes())
+        ret = sum(aux.retorno(i.getCotacoes()))/len(i.getCotacoes())
         i.setRetorno(ret)
 
     return lista_ativos

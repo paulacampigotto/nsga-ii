@@ -3,11 +3,31 @@ from aux import *
 from nsga2 import *
 from metricas import *
 from grafico import *
+from classes import *
 from math import ceil
 import random
 import copy
 import sys
 import timeit
+
+
+def otimiza(populacao_filtrada, lista_ativos):
+    # global populacao
+    popCrossover = crossover(populacao_filtrada)
+    populacaoMutada = mutacao(popCrossover, lista_ativos)
+    return filtragem(populacaoMutada, False).copy()
+
+def populacao_inicial(lista_ativos):
+    populacao = []
+    for j in range(TAM_POP):
+        carteira = []
+        for i in range(CARDINALIDADE):
+            ativo = (lista_ativos[ativo_aux(carteira)], 1/CARDINALIDADE) ##### satisfazer a soma dos pesos = 1
+            carteira.append(ativo) 
+        populacao.append(Carteira(carteira))
+
+    return populacao
+
 
 def crossover(pop):
     pares = selecao(pop)
@@ -170,3 +190,9 @@ def filtragem(populacao_entrada, primeira_iteracao):
             pop.append(j)
 
     return pop
+
+
+def otimiza(populacao_filtrada, lista_ativos):
+    popCrossover = crossover(populacao_filtrada)
+    populacaoMutada = mutacao(popCrossover, lista_ativos)
+    return filtragem(populacaoMutada, False).copy()

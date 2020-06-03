@@ -3,6 +3,7 @@ from nsga2 import *
 from grafico import *
 from operadores import *
 from metricas import *
+from classes import *
 from os.path import isfile, join
 from os import listdir
 from pprint import pprint
@@ -13,22 +14,6 @@ import random
 import timeit
 import math
 
-def pesoProporcional(carteira,i):
-    soma = 0.0
-
-    for j in range(len(carteira)):
-        soma+=carteira[j][1]
-
-    if(i == CARDINALIDADE-1):
-        return 1- soma
-
-    elif(i==0):
-        p = random.uniform(0, 0.2)
-        return p
-
-    else:
-        p = random.uniform(0, 1 - soma)
-        return p
 
 def ativo_aux(carteira):
     while True:
@@ -85,28 +70,6 @@ def melhor_carteira(pop):
     return carteira
 
 
-def calcula_cotacoes_carteira_2015_2018(carteira):
-    numero_cotacoes = len(carteira.getAtivoPeloIndex(0)[0].getCotacoes())
-    print(numero_cotacoes)
-    matriz = []
-    for i in range(carteira.cardinalidade()):
-        matriz.append([0]*numero_cotacoes)
-
-    for ativo in range(carteira.cardinalidade()):
-        for cotacao in range(numero_cotacoes):
-            matriz[ativo][cotacao] +=  carteira.getAtivoPeloIndex(0)[0].getCotacoes()[cotacao] * carteira.getAtivoPeloIndex(ativo)[1]
-
-    y = [0]*numero_cotacoes
-    for i in range(numero_cotacoes):
-        for ativo in range(len(matriz)):
-            y[i] += matriz[ativo][i]
-            
-    return y
-
-
-
-
-
 def grafico_risco_retorno(x,y,nome):
     
     plt.scatter(x, y, marker = '*', color = '#ff66c7')
@@ -128,3 +91,124 @@ def escolhe_ativo(carteira, lista_ativos):
             return novoAtivo1
         else:
             verifica = True
+
+def encontraIndexAtivo(codigo_ativo, lista):
+    index = 0
+    for i in lista:
+        if(i.getCodigo() == codigo_ativo):
+            return index
+        index += 1
+
+def desvio_padrao(lista):
+    n = len(lista)
+    media = sum(lista)/n
+    cont = 0
+    for i in lista:
+        cont += (abs(i - media))**2
+    cont/=n
+    cont = math.sqrt(cont)
+    return cont
+
+def calcula_cotacoes_carteira(carteira, lista):
+    numero_cotacoes = len(lista[0].getCotacoes())
+    matriz = []
+    for i in range(carteira.cardinalidade()):
+        matriz.append([0]*numero_cotacoes)
+
+    for index_ativo in range(carteira.cardinalidade()):
+        ativo = carteira.getAtivoPeloIndex(index_ativo)
+        for cotacao in range(numero_cotacoes):
+            matriz[index_ativo][cotacao] +=  lista[encontraIndexAtivo(ativo[0].getCodigo(), lista)].getCotacoes()[cotacao] * ativo[1]
+
+    y = [0]*numero_cotacoes
+    for i in range(numero_cotacoes):
+        for ativo in range(len(matriz)):
+            y[i] += matriz[ativo][i]
+            
+    return y
+
+def retorno(ativo):
+    retorno = []
+    for i in range(len(ativo) -1):
+        retorno.append((ativo[i+1] - ativo[i]) / ativo[i])
+    return retorno
+
+def retorno_acumulado(ativo):
+    retorno = []
+    for i in range(len(ativo) -1):
+        if(i == 0):
+            retorno.append(((ativo[i+1]  / ativo[i]) -1 )* 100)
+        else:    
+            retorno.append(retorno[i-1]+((ativo[i+1]  / ativo[i]) -1 )* 100)
+    return retorno
+
+def retorno_acumulado_barras(ativo,proxima_cotacao):
+    retorno = []
+    x = 0
+    for i in range(len(ativo) -1):
+        if(i == 0):
+            retorno.append(((ativo[i+1]  / ativo[i]) -1 )* 100)
+        else:    
+            retorno.append(retorno[i-1]+((ativo[i+1]  / ativo[i]) -1 )* 100)
+            x = ativo[i+1]
+    tam = len(retorno)-1
+    retorno.append(retorno[tam] + ((proxima_cotacao / x) -1 ) * 100)
+    return retorno
+
+def le_arquivo_retorna_lista_ativos(data_inicial, data_final, ibovespa):
+
+    lista = []
+    nomeAtivos = []
+    primeira = True
+    flag = False
+    
+    with open("arquivos/ativos.csv", "r+") as f:
+        linhas = f.readlines()
+        listaCotacoes = []
+        
+
+        #PERCORRE LINHAS
+        for linha in linhas:
+            valores = linha.split(",")
+            j=-1
+            #PERCORRE CADA ATIVO
+            for valor in valores:
+                if(valores[0] == 'CODIGOS' and valor != valores[0]):
+                    if(valor == 'IBOV\n'):
+                        nome = 'IBOV'
+                        nomeAtivos.append(nome)
+                    else:
+                        nomeAtivos.append(valor)
+                else:
+                    if primeira and valor != 'CODIGOS':
+                        for i in range(len(nomeAtivos)):
+                            listaCotacoes.append([])
+                        primeira = False
+                    if data_inicial == valores[0]:
+                        flag = True
+                    if(flag and valor != valores[0])and valor != '-' and valor != '-\n':
+                        listaCotacoes[j].append(float(valor))
+                j+=1
+            if data_final == valores[0]:
+                flag = False
+                
+        lista_ibovespa = []
+        for i in range(len(nomeAtivos)):
+            codigoAtivo = nomeAtivos[i]
+            if(codigoAtivo == "IBOV"):
+                lista_ibovespa = copy.copy(listaCotacoes[i])
+            else:
+                lista.append(Ativo(codigoAtivo,listaCotacoes[i]))
+    
+    if ibovespa:
+        return lista_ibovespa
+    else:
+        return lista
+
+def calcula_preco_inicial_carteira(carteira, lista_ativos_semestre):
+    return calcula_cotacoes_carteira(carteira, lista_ativos_semestre)[0]
+
+def calcula_preco_final_carteira(carteira, lista_ativos_semestre):
+    preco = calcula_cotacoes_carteira(carteira, lista_ativos_semestre)
+    tam = len(preco) - 1
+    return preco[tam]

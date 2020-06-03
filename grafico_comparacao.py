@@ -46,8 +46,8 @@ rects2 = plt.bar(X+ bar_width, retornos_acumulados_direto, yerr=desvio_direto, w
 alpha=opacity,color='#333333',label='Direto', hatch="///")
 
 plt.xlabel('Métricas de risco')
-plt.ylabel('Retorno acumulado')
-plt.title('Retorno acumulado por semestre das métricas')
+plt.ylabel('Retorno acumulado (%)')
+plt.title('Retorno acumulado entre 2017 e 2019')
 plt.xticks(X + bar_width-0.15, ('CVaR', 'VaR', 'EWMA', 'GARCH', 'LPM'))
 plt.legend()
 plt.tight_layout()

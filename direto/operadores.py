@@ -1,13 +1,36 @@
-from globais import *
+import operadores as operadores
 from aux import *
-from nsga2 import *
-from metricas import *
-from grafico import *
-from math import ceil
+import grafico as grafico
+from globais import *
+import metricas as metricas
+from classes import *
+from os import listdir
+from os.path import isfile, join
+from pprint import pprint
+import matplotlib.pyplot as plt
+import numpy as np
 import random
+import itertools
+import timeit
 import copy
 import sys
-import timeit
+
+
+def otimiza(populacao_filtrada, lista_ativos):
+    # global populacao
+    popCrossover = crossover(populacao_filtrada)
+    populacaoMutada = mutacao(popCrossover, lista_ativos)
+    return filtragem(populacaoMutada, False).copy()
+
+def populacao_inicial(lista_ativos):
+    populacao = []
+    for j in range(TAM_POP):
+        carteira = []
+        for i in range(CARDINALIDADE):
+            ativo = (lista_ativos[aux.ativo_aux(carteira)], 1/CARDINALIDADE) ##### satisfazer a soma dos pesos = 1
+            carteira.append(ativo)
+        populacao.append(Carteira(carteira))
+    return populacao
 
 def crossover(pop):
     pares = selecao(pop)
@@ -44,18 +67,20 @@ def mutacao(pop, lista_ativos):
             if (probabili <= PROBABILIDADE_MUTACAO):
                 prob = random.random() # mutar proporção ou ativo
                 if(prob < 0.5):
-                    r = random.uniform(0,ativo[1]) #gera um valor r aleatório para ser subtraído da proporção atual
-                    carteira.setAtivoPeloIndex(index1, (ativo[0], ativo[1]-r))
                     novoAtivo2 = random.choice(carteira.getAtivos())
                     index2 = carteira.getIndexPeloAtivo(novoAtivo2)
+                    while(True):
+                        r = random.uniform(0,ativo[1]) #gera um valor r aleatório para ser subtraído da proporção atual
+                        if(r + novoAtivo2[1] <= PROPORCAO_MAXIMA_CARTEIRA):
+                            break
+                    carteira.setAtivoPeloIndex(index1, (ativo[0], ativo[1]-r))
                     carteira.setAtivoPeloIndex(index2, (novoAtivo2[0], novoAtivo2[1]+r))
                 else:
-                    novoAtivo1 = escolhe_ativo(carteira, lista_ativos)
+                    novoAtivo1 = aux.escolhe_ativo(carteira, lista_ativos)
                     carteira.setAtivoPeloIndex(index1, (novoAtivo1, ativo[1]))
             index1+=1
             
     return pop
-
 
 def selecao(pop):
     popu = pop.copy()
@@ -65,7 +90,7 @@ def selecao(pop):
     tam = len(pop)
     qtd_pares = tam//2
     for i in range(qtd_pares):
-        ind_a, ind_b = seleciona_dois_ativos(popu)
+        ind_a, ind_b = aux.seleciona_dois_ativos(popu)
         if ind_a.getRank() < ind_b.getRank():
             p_a = copy.copy(ind_a)
         else: 
@@ -73,7 +98,7 @@ def selecao(pop):
         for k in popu:
             if k.getId() == p_a.getId():
                 popu.remove(k)
-        ind_c, ind_d = seleciona_dois_ativos(popu)
+        ind_c, ind_d = aux.seleciona_dois_ativos(popu)
         
         if ind_c.getRank() < ind_d.getRank():
             p_b = copy.copy(ind_c)
@@ -83,17 +108,16 @@ def selecao(pop):
 
     return pares   
 
-
 def nds(popu):
     fronteira = [[]]
     for p in popu:
         p.setContador_n(0)
         for q in popu:
             if p != q:
-                if domina(p,q):
+                if aux.domina(p,q):
                     p.appendDominadas(q)
                 else:
-                    if(domina(q,p)):
+                    if(aux.domina(q,p)):
                         p.setContador_n(p.getContador_n() + 1)
         if p.getContador_n() == 0:
             p.setRank(1)
