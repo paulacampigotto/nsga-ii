@@ -31,8 +31,6 @@ print(desvio_semestral)
 print(desvio_direto)
 
 
-
-
 # create plot
 n_groups = len(retornos_acumulados_semestral)
 fig, ax = plt.subplots()

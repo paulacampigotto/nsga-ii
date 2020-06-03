@@ -197,7 +197,7 @@ def le_arquivo_retorna_lista_ativos(data_inicial, data_final, ibovespa):
     
      
 
-def populacao_inicial():
+def populacao_inicial(lista_ativos):
     populacao = []
     for j in range(TAM_POP):
         carteira = []
@@ -215,9 +215,8 @@ def otimiza(populacao_filtrada, lista_ativos):
     return filtragem(populacaoMutada, False).copy()
 
 
-def main():
 
-    global lista_ativos
+def main():
 
     lista_ativos_grafico = []
     lista_ibovespa_grafico = []
@@ -229,7 +228,7 @@ def main():
     
     #Separa as cotações dos ativos em semestres (lista de matrizes)
     
-    lista_ativos = le_arquivo_retorna_lista_ativos(datas[0], datas[1], False)
+    
     
     for i in range(0,len(datas_grafico) - 1,2):
         lista_ativos_grafico.append(le_arquivo_retorna_lista_ativos(datas_grafico[i], datas_grafico[i+1], False))
@@ -250,64 +249,64 @@ def main():
 
     
     for risco in range(QUANTIDADE_METRICAS):
-        lista_ativos = metrica_risco(lista_ativos,risco)
-        
+
+        lista_ativos = le_arquivo_retorna_lista_ativos(datas[0], datas[1], False)
+        lista_ativos_metrica = metrica_risco(lista_ativos,risco)
+
+        x_soma_execucoes = []
+        y_soma_execucoes = []
         primeira_execucao = True  
         
-        x = []
-        y = [] 
-        
+       
         #EXECUÇÕES
         for j in range(EXECUCOES):
-            start = timeit.default_timer()  
+
+            x_iteracao = []
+            y_iteracao = [] 
 
             #INICIALIZAÇÃO
-            populacao = populacao_inicial()
+            populacao = populacao_inicial(lista_ativos_metrica)
             pop_filtrada = filtragem(populacao, True)
+
             #GRAFICO INICIAL 
             x1 = []
-            y1 = []
-            
+            y1 = []            
             for carteira in pop_filtrada:
                 x1.append(carteira.getRisco())
                 y1.append(carteira.getRetorno())
+
             #ITERAÇÕES
             cont=0
             for i in range(ITERACOES):
-                #print("RISCO: " + str(risco) + " EXEC: " + str(j) + " ITERACOES: " + str(cont))
+                print("RISCO: " + str(risco) + " EXEC: " + str(j) + " ITERACOES: " + str(cont))
                 cont+=1
-                pop = otimiza(pop_filtrada, lista_ativos)
+                pop = otimiza(pop_filtrada, lista_ativos_metrica)
                 pop_filtrada = pop.copy()
                 solucao_parcial = melhor_carteira(pop_filtrada)
                 if solucao_final[risco] == None or solucao_parcial.fitness() > solucao_final[risco].fitness():
                     solucao_final[risco] = solucao_parcial
 
             #GRAFICO FINAL DA ITERAÇÃO
-            x2 = []
-            y2 = []
             for carteira in pop_filtrada:
-                x2.append(carteira.getRisco())
-                y2.append(carteira.getRetorno())   
+                x_iteracao.append(carteira.getRisco())
+                y_iteracao.append(carteira.getRetorno())   
             
             if primeira_execucao:
-                x = copy.copy(x2)
-                y = copy.copy(y2)
+                x_soma_execucoes = copy.copy(x_iteracao)
+                y_soma_execucoes = copy.copy(y_iteracao)
                 primeira_execucao = False
             else:
                 for i in range(len(pop_filtrada)):
-                    x[i] += x2[i]
-                    y[i] += y2[i]
-
-            stop = timeit.default_timer()
-            #print('******Time: ', stop - start)  
+                    x_soma_execucoes[i] += x_iteracao[i]
+                    y_soma_execucoes[i] += y_iteracao[i]
 
         #GRAFICO FINAL DA EXECUÇÃO
         for j in range(len(pop_filtrada)):
-            x[j]/=EXECUCOES
-            y[j]/=EXECUCOES
+            x_soma_execucoes[j]/=EXECUCOES
+            y_soma_execucoes[j]/=EXECUCOES
         
-        pontos_x[risco] = x
-        pontos_y[risco] = y
+        pontos_x[risco] = x_soma_execucoes
+        pontos_y[risco] = y_soma_execucoes
         
     
     grafico_tempo_barras(solucao_final, lista_ativos_grafico, lista_ibovespa_grafico)

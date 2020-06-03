@@ -266,24 +266,18 @@ def main():
             lista_ativos = metrica_risco(lista_ativos,risco)
             
             primeira_execucao = True  
-            
-            x = []
-            y = [] 
+            x_soma_execucoes = []
+            y_soma_execucoes = [] 
             
             #EXECUÇÕES
             for j in range(EXECUCOES):
-                start = timeit.default_timer()  
 
                 #INICIALIZAÇÃO
                 populacao = populacao_inicial()
                 pop_filtrada = filtragem(populacao, True)
-                #GRAFICO INICIAL 
-                x1 = []
-                y1 = []
-                
-                for carteira in pop_filtrada:
-                    x1.append(carteira.getRisco())
-                    y1.append(carteira.getRetorno())
+                x_iteracoes = []
+                y_iteracoes = []
+
                 #ITERAÇÕES
                 cont=0
                 for i in range(ITERACOES):
@@ -296,31 +290,28 @@ def main():
                         solucao_final[risco] = solucao_parcial
 
                 #GRAFICO FINAL DA ITERAÇÃO
-                x2 = []
-                y2 = []
+                x_iteracoes = []
+                y_iteracoes = []
                 for carteira in pop_filtrada:
-                    x2.append(carteira.getRisco())
-                    y2.append(carteira.getRetorno())   
+                    x_iteracoes.append(carteira.getRisco())
+                    y_iteracoes.append(carteira.getRetorno())   
                 
                 if primeira_execucao:
-                    x = copy.copy(x2)
-                    y = copy.copy(y2)
+                    x_soma_execucoes = copy.copy(x_iteracoes)
+                    y_soma_execucoes = copy.copy(y_iteracoes)
                     primeira_execucao = False
                 else:
                     for i in range(len(pop_filtrada)):
-                        x[i] += x2[i]
-                        y[i] += y2[i]
-
-                stop = timeit.default_timer()
-                #print('******Time: ', stop - start)  
+                        x_soma_execucoes[i] += x_iteracoes[i]
+                        y_soma_execucoes[i] += y_iteracoes[i] 
 
             #GRAFICO FINAL DA EXECUÇÃO
             for j in range(len(pop_filtrada)):
-                x[j]/=EXECUCOES
-                y[j]/=EXECUCOES
+                x_soma_execucoes[j]/=EXECUCOES
+                y_soma_execucoes[j]/=EXECUCOES
             
-            pontos_x[risco] = x
-            pontos_y[risco] = y
+            pontos_x[risco] = x_soma_execucoes
+            pontos_y[risco] = y_soma_execucoes
         
         pontos_x_por_semestre.append(pontos_x)
         pontos_y_por_semestre.append(pontos_y)
@@ -329,7 +320,9 @@ def main():
  
     grafico_tempo_barras(solucao_final_por_semestre, lista_ativos_proximo_semestre)
     grafico_tempo(solucao_final, lista_ativos_proximo_semestre, lista_ibovespa_proximo_semestre)
+    
     grafico_risco_retorno(pontos_x[0], pontos_y[0], "paretoFinalCVaR")
+    
     grafico_risco_retorno(pontos_x[1], pontos_y[1], "paretoFinalVaR")
     grafico_risco_retorno(pontos_x[2], pontos_y[2], "paretoFinalEWMA")
     grafico_risco_retorno(pontos_x[3], pontos_y[3], "paretoFinalGARCH")

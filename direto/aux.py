@@ -85,15 +85,6 @@ def melhor_carteira(pop):
     return carteira
 
 
-def desvio_padrao(lista):
-    n = len(lista)
-    media = sum(lista)/n
-    cont = 0
-    for i in lista:
-        cont += (abs(i - media))**2
-    cont/=n
-    cont = math.sqrt(cont)
-    return cont
 
 def calcula_cotacoes_carteira_2015_2018(carteira):
     numero_cotacoes = len(carteira.getAtivoPeloIndex(0)[0].getCotacoes())

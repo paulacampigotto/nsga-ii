@@ -1,12 +1,12 @@
-TAM_POP = 10
+TAM_POP = 80
 CARDINALIDADE = 9
-ITERACOES = 10
-EXECUCOES = 2
+ITERACOES = 100
+EXECUCOES = 1
 QUANTIDADE_ATIVOS = 62
 QUANTIDADE_METRICAS = 5
 PROBABILIDADE_MUTACAO = 0.1
 
-lista_ativos = []
+#lista_ativos = []
 lista_ibovespa = []
 lista_ativos_proximo_semestre = []
 lista_ibovespa_proximo_semestre = []
