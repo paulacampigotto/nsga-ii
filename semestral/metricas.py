@@ -1,18 +1,12 @@
-from nsga2 import *
-from operadores import *
+from math import ceil
+
 import aux as aux
+from classes import *
 from globais import *
 from grafico import *
-from classes import *
-from os import listdir
-from os.path import isfile, join
-from pprint import pprint
-from math import ceil
-import matplotlib.pyplot as plt
-import numpy as np
-import itertools
-import random
-import timeit
+from nsga2 import *
+from operadores import *
+
 
 def ewma(ativo):
     retornos = aux.retorno(ativo)

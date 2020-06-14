@@ -1,17 +1,10 @@
+import copy
+
 from operadores import *
 from grafico import *
 from globais import *
 import metricas as metricas
 from classes import *
-from os import listdir
-from os.path import isfile, join
-from pprint import pprint
-import matplotlib.pyplot as plt
-import numpy as np
-import random
-import itertools
-import timeit
-import copy
 
 
 def main():

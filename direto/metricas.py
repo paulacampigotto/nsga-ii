@@ -1,19 +1,9 @@
-import operadores as operadores
-import aux as aux
-import grafico as grafico
-from globais import *
-import metricas as metricas
-from classes import *
-from os import listdir
-from os.path import isfile, join
-from pprint import pprint
 from math import *
-import matplotlib.pyplot as plt
-import numpy as np
-import random
-import itertools
-import timeit
-import copy
+
+import aux as aux
+from classes import *
+from globais import *
+
 
 def ewma(ativo):
     retornos = aux.retorno(ativo)

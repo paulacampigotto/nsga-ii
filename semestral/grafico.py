@@ -1,19 +1,12 @@
-from operadores import *
 import aux as aux
+import matplotlib.pyplot as plt
+import numpy as np
+from classes import *
 from globais import *
 from metricas import *
 from nsga2 import *
-from classes import *
-from os import listdir
-from os.path import isfile, join
-from pprint import pprint
-import matplotlib.pyplot as plt
-import numpy as np
-import random
-import itertools
-import timeit
-import copy
-import math
+from operadores import *
+
 
 def grafico_tempo(carteiras, lista_ativos_proximo_semestre, lista_ibovespa_proximo_semestre):
  

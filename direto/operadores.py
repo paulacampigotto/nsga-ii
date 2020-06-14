@@ -1,19 +1,10 @@
-import operadores as operadores
-from aux import *
-import grafico as grafico
-from globais import *
-import metricas as metricas
-from classes import *
-from os import listdir
-from os.path import isfile, join
-from pprint import pprint
-import matplotlib.pyplot as plt
-import numpy as np
-import random
-import itertools
-import timeit
 import copy
+import random
 import sys
+
+from aux import *
+from classes import *
+from globais import *
 
 
 def otimiza(populacao_filtrada, lista_ativos):
@@ -27,7 +18,7 @@ def populacao_inicial(lista_ativos):
     for j in range(TAM_POP):
         carteira = []
         for i in range(CARDINALIDADE):
-            ativo = (lista_ativos[aux.ativo_aux(carteira)], 1/CARDINALIDADE) ##### satisfazer a soma dos pesos = 1
+            ativo = (lista_ativos[ativo_aux(carteira)], 1/CARDINALIDADE) ##### satisfazer a soma dos pesos = 1
             carteira.append(ativo)
         populacao.append(Carteira(carteira))
     return populacao
@@ -76,7 +67,7 @@ def mutacao(pop, lista_ativos):
                     carteira.setAtivoPeloIndex(index1, (ativo[0], ativo[1]-r))
                     carteira.setAtivoPeloIndex(index2, (novoAtivo2[0], novoAtivo2[1]+r))
                 else:
-                    novoAtivo1 = aux.escolhe_ativo(carteira, lista_ativos)
+                    novoAtivo1 = escolhe_ativo(carteira, lista_ativos)
                     carteira.setAtivoPeloIndex(index1, (novoAtivo1, ativo[1]))
             index1+=1
             
@@ -90,7 +81,7 @@ def selecao(pop):
     tam = len(pop)
     qtd_pares = tam//2
     for i in range(qtd_pares):
-        ind_a, ind_b = aux.seleciona_dois_ativos(popu)
+        ind_a, ind_b = seleciona_dois_ativos(popu)
         if ind_a.getRank() < ind_b.getRank():
             p_a = copy.copy(ind_a)
         else: 
@@ -98,7 +89,7 @@ def selecao(pop):
         for k in popu:
             if k.getId() == p_a.getId():
                 popu.remove(k)
-        ind_c, ind_d = aux.seleciona_dois_ativos(popu)
+        ind_c, ind_d = seleciona_dois_ativos(popu)
         
         if ind_c.getRank() < ind_d.getRank():
             p_b = copy.copy(ind_c)
@@ -114,10 +105,10 @@ def nds(popu):
         p.setContador_n(0)
         for q in popu:
             if p != q:
-                if aux.domina(p,q):
+                if domina(p,q):
                     p.appendDominadas(q)
                 else:
-                    if(aux.domina(q,p)):
+                    if(domina(q,p)):
                         p.setContador_n(p.getContador_n() + 1)
         if p.getContador_n() == 0:
             p.setRank(1)
