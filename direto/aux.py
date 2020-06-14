@@ -195,7 +195,6 @@ def calcula_cotacoes_carteira(carteira, lista):
 
     return y
 
-
 def desvio_padrao(lista):
     n = len(lista)
     media = sum(lista)/n
