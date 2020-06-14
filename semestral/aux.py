@@ -212,3 +212,9 @@ def calcula_preco_final_carteira(carteira, lista_ativos_semestre):
     preco = calcula_cotacoes_carteira(carteira, lista_ativos_semestre)
     tam = len(preco) - 1
     return preco[tam]
+
+def soma_aux(retorno, indice):
+    s = 0
+    for i in range(indice):
+        s+= retorno[i]
+    return s

@@ -38,17 +38,15 @@ def main():
     solucao_final = []
   
     #pontos = [cvar, var, ewma, garch, lpm]
-    
-    for i in range(QUANTIDADE_METRICAS):
-        pontos_x.append([])
-        pontos_y.append([])
-        solucao_final.append(None)
 
     for risco in range(QUANTIDADE_METRICAS):
 
         lista_ativos = aux.le_arquivo_retorna_lista_ativos(datas[0], datas[1], False)
         lista_ativos_metrica = metricas.metrica_risco(lista_ativos,risco)
-
+        
+        pontos_x.append([])
+        pontos_y.append([])
+        solucao_final.append(None)
         x_soma_execucoes = []
         y_soma_execucoes = []
         primeira_execucao = True  
@@ -73,7 +71,7 @@ def main():
             #ITERAÇÕES
             cont=0
             for i in range(ITERACOES):
-                print("RISCO: " + str(risco) + " EXEC: " + str(j) + " ITERACOES: " + str(cont))
+                print("RISCO: " + str(risco + 1) + " EXEC: " + str(j + 1) + " ITERACOES: " + str(cont + 1))
                 cont+=1
                 pop = operadores.otimiza(pop_filtrada, lista_ativos_metrica)
                 pop_filtrada = pop.copy()
@@ -86,9 +84,12 @@ def main():
                 x_iteracao.append(carteira.getRisco())
                 y_iteracao.append(carteira.getRetorno())   
             
+            x_iteracao.sort()
+            y_iteracao.sort()
+
             if primeira_execucao:
-                x_soma_execucoes = copy.copy(x_iteracao)
-                y_soma_execucoes = copy.copy(y_iteracao)
+                x_soma_execucoes = x_iteracao
+                y_soma_execucoes = y_iteracao
                 primeira_execucao = False
             else:
                 for i in range(len(pop_filtrada)):
@@ -96,17 +97,20 @@ def main():
                     y_soma_execucoes[i] += y_iteracao[i]
 
         #GRAFICO FINAL DA EXECUÇÃO
-        for j in range(len(pop_filtrada)):
-            x_soma_execucoes[j]/=EXECUCOES
-            y_soma_execucoes[j]/=EXECUCOES
+        for i in range(len(pop_filtrada)):
+            x_soma_execucoes[i]/=EXECUCOES
+            y_soma_execucoes[i]/=EXECUCOES
         
         pontos_x[risco] = x_soma_execucoes
         pontos_y[risco] = y_soma_execucoes
         
+        # print('soma', x_soma_execucoes)
+        # print('pontos', pontos_x)
+        # print()
     
-    for i in solucao_final:
-        i.printCarteira()
-        print()
+    # for i in solucao_final:
+    #     i.printCarteira()
+    #     print()
 
 
     grafico.grafico_tempo_barras(solucao_final, lista_ativos_grafico, lista_ibovespa_grafico)
@@ -114,11 +118,11 @@ def main():
     grafico.grafico_tempo(solucao_final, aux.le_arquivo_retorna_lista_ativos(datas_grafico[0], datas_grafico[len(datas_grafico)-1], False),
     aux.le_arquivo_retorna_lista_ativos(datas_grafico[0], datas_grafico[len(datas_grafico)-1], True))
     
-    grafico.grafico_risco_retorno(pontos_x[0], pontos_y[0], "paretoFinalCVaR")
-    grafico.grafico_risco_retorno(pontos_x[1], pontos_y[1], "paretoFinalVaR")
-    grafico.grafico_risco_retorno(pontos_x[2], pontos_y[2], "paretoFinalEWMA")
-    grafico.grafico_risco_retorno(pontos_x[3], pontos_y[3], "paretoFinalGARCH")
-    grafico.grafico_risco_retorno(pontos_x[4], pontos_y[4], "paretoFinalLPM")
+    pareto_dos_riscos = ['paretoFinalCVaR', 'paretoFinalVaR', 'paretoFinalEWMA', 'paretoFinalGARCH', 'paretoFinalLPM']
+
+    for i in range(len(pontos_x)):
+        grafico.grafico_risco_retorno(pontos_x[i], pontos_y[i], pareto_dos_riscos[i])   
+    
     
 if __name__ == "__main__":
     main()

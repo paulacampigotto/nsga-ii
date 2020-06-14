@@ -48,26 +48,19 @@ def var(ativo):
     var99 = ret_ord[ceil((1-(99/100))*total_count)]
     var999 = ret_ord[ceil((1-(99.9/100))*total_count)]
 
-    return [(-var95), (-var99), (-var999)]
+    return [abs(var95), abs(var99), abs(var999)]
     
-
-def soma_aux(retorno, indice):
-    s = 0
-    for i in range(indice):
-        s+= retorno[i]
-    return s
 
 def cvar(ativo):
     ret_ord = aux.retorno(ativo)
     ret_ord.sort()
     total_count = len(ret_ord)
 
-    cvar95 = -((1/((1-(95/100))*total_count))*soma_aux(ret_ord, ceil((1-(95/100))*total_count)))
-    cvar99 = -((1/((1-(99/100))*total_count))*soma_aux(ret_ord, ceil((1-(99/100))*total_count)))
-    cvar999 = -((1/((1-(99.9/100))*total_count))*soma_aux(ret_ord, ceil((1-(99.9/100))*total_count)))
+    cvar95 = ((1/((1-(95/100))*total_count))*aux.soma_aux(ret_ord, ceil((1-(95/100))*total_count)))
+    cvar99 = ((1/((1-(99/100))*total_count))*aux.soma_aux(ret_ord, ceil((1-(99/100))*total_count)))
+    cvar999 = ((1/((1-(99.9/100))*total_count))*aux.soma_aux(ret_ord, ceil((1-(99.9/100))*total_count)))
 
-    return [(cvar95), (cvar99), (cvar999)]
-
+    return [abs(cvar95), abs(cvar99), abs(cvar999)]
 
 def metrica_risco(lista_ativos, valor):
 

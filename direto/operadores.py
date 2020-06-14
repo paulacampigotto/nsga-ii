@@ -155,7 +155,7 @@ def crowding_distance(fronteira):
                 (pop_ord[j+1].getDist_crowd() - pop_ord[j-1].getDist_crowd())/(pop_ord[n-1].getRetorno() - pop_ord[0].getRetorno()))
         
         else:
-            pop_ord = sorted(fronteira, key=riscoKey, reverse=True)
+            pop_ord = sorted(fronteira, key=riscoKey)
             pop_ord[0].setDist_crowd(sys.maxsize)
             pop_ord[n-1].setDist_crowd(sys.maxsize)
             for j in range(1, n-2, 1):

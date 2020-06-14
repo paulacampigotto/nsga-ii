@@ -15,8 +15,6 @@ import itertools
 import timeit
 import copy
 
-
-
 def ewma(ativo):
     retornos = aux.retorno(ativo)
     ewma_variance = []
@@ -51,7 +49,7 @@ def var(ativo):
     var99 = ret_ord[ceil((1-(99/100))*total_count)]
     var999 = ret_ord[ceil((1-(99.9/100))*total_count)]
 
-    return [(-var95), (-var99), (-var999)]
+    return [abs(var95), abs(var99), abs(var999)]
     
 
 def cvar(ativo):
@@ -59,11 +57,11 @@ def cvar(ativo):
     ret_ord.sort()
     total_count = len(ret_ord)
 
-    cvar95 = -((1/((1-(95/100))*total_count))*aux.soma_aux(ret_ord, ceil((1-(95/100))*total_count)))
-    cvar99 = -((1/((1-(99/100))*total_count))*aux.soma_aux(ret_ord, ceil((1-(99/100))*total_count)))
-    cvar999 = -((1/((1-(99.9/100))*total_count))*aux.soma_aux(ret_ord, ceil((1-(99.9/100))*total_count)))
+    cvar95 = ((1/((1-(95/100))*total_count))*aux.soma_aux(ret_ord, ceil((1-(95/100))*total_count)))
+    cvar99 = ((1/((1-(99/100))*total_count))*aux.soma_aux(ret_ord, ceil((1-(99/100))*total_count)))
+    cvar999 = ((1/((1-(99.9/100))*total_count))*aux.soma_aux(ret_ord, ceil((1-(99.9/100))*total_count)))
 
-    return [(cvar95), (cvar99), (cvar999)]
+    return [abs(cvar95), abs(cvar99), abs(cvar999)]
 
 
 def metrica_risco(lista_ativos, valor):

@@ -50,18 +50,14 @@ def main():
         pontos_y = []
         solucao_final = []
         
-
-        #pontos = [cvar, var, ewma, garch, lpm]
-        
-        for i in range(QUANTIDADE_METRICAS):
-            pontos_x.append([])
-            pontos_y.append([])
-            solucao_final.append(None)
+        #pontos = [cvar, var, ewma, garch, lpm
 
         
         for risco in range(QUANTIDADE_METRICAS):
             lista_ativos = metricas.metrica_risco(lista_ativos,risco)
-            
+            pontos_x.append([])
+            pontos_y.append([])
+            solucao_final.append(None)
             primeira_execucao = True  
             x_soma_execucoes = []
             y_soma_execucoes = [] 
@@ -93,9 +89,11 @@ def main():
                     x_iteracoes.append(carteira.getRisco())
                     y_iteracoes.append(carteira.getRetorno())   
                 
+                x_iteracoes.sort()
+                y_iteracoes.sort()
                 if primeira_execucao:
-                    x_soma_execucoes = copy.copy(x_iteracoes)
-                    y_soma_execucoes = copy.copy(y_iteracoes)
+                    x_soma_execucoes = x_iteracoes
+                    y_soma_execucoes = y_iteracoes
                     primeira_execucao = False
                 else:
                     for i in range(len(pop_filtrada)):
@@ -103,7 +101,7 @@ def main():
                         y_soma_execucoes[i] += y_iteracoes[i] 
 
             #GRAFICO FINAL DA EXECUÇÃO
-            for j in range(len(pop_filtrada)):
+            for j in range(len(x_soma_execucoes)):
                 x_soma_execucoes[j]/=EXECUCOES
                 y_soma_execucoes[j]/=EXECUCOES
             
@@ -112,6 +110,7 @@ def main():
         
         pontos_x_por_semestre.append(pontos_x)
         pontos_y_por_semestre.append(pontos_y)
+        
         solucao_final_por_semestre.append(solucao_final)
     
     index = 0
@@ -131,15 +130,19 @@ def main():
     print("Trocou = ", str(cont), " Vezes")
  
     grafico_tempo_barras(solucao_final_por_semestre, lista_ativos_semestral, lista_ibovespa_semestral)
-    
     grafico_tempo(solucao_final, lista_ativos_proximo_semestre, lista_ibovespa_proximo_semestre)
     
-    grafico_risco_retorno(pontos_x[0], pontos_y[0], "paretoFinalCVaR")
+    pareto_dos_riscos = ['paretoFinalCVaR', 'paretoFinalVaR', 'paretoFinalEWMA', 'paretoFinalGARCH', 'paretoFinalLPM']
+
+    for i in range(len(pontos_x)):
+        grafico_risco_retorno(pontos_x[i], pontos_y[i], pareto_dos_riscos[i])   
+
+    # grafico_risco_retorno(pontos_x[0], pontos_y[0], "paretoFinalCVaR")
     
-    grafico_risco_retorno(pontos_x[1], pontos_y[1], "paretoFinalVaR")
-    grafico_risco_retorno(pontos_x[2], pontos_y[2], "paretoFinalEWMA")
-    grafico_risco_retorno(pontos_x[3], pontos_y[3], "paretoFinalGARCH")
-    grafico_risco_retorno(pontos_x[4], pontos_y[4], "paretoFinalLPM")
+    # grafico_risco_retorno(pontos_x[1], pontos_y[1], "paretoFinalVaR")
+    # grafico_risco_retorno(pontos_x[2], pontos_y[2], "paretoFinalEWMA")
+    # grafico_risco_retorno(pontos_x[3], pontos_y[3], "paretoFinalGARCH")
+    # grafico_risco_retorno(pontos_x[4], pontos_y[4], "paretoFinalLPM")
     
 if __name__ == "__main__":
     main()
