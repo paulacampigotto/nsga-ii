@@ -131,11 +131,14 @@ def escolhe_ativo(carteira, lista_ativos):
             return novoAtivo1
         else:
             verifica = True
+            
+            
 def retorno(ativo):
     retorno = []
     for i in range(len(ativo) -1):
         retorno.append((ativo[i+1] - ativo[i]) / ativo[i])
     return retorno
+
 
 def retorno_acumulado(ativo):
     retorno = []
@@ -146,6 +149,7 @@ def retorno_acumulado(ativo):
             retorno.append(retorno[i-1]+((ativo[i+1]  / ativo[i]) -1 )* 100)
 
     return retorno
+
 
 def soma_aux(retorno, indice):
     s = 0
