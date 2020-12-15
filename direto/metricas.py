@@ -30,7 +30,7 @@ def lpm(ativo):
     lpm_variance.append(abs(retornos[0]))
     for i in range(1, len(retornos)):
         lpm_variance.append(pow((min(pow(retornos[i] - τ, 0), k)), (1 / k)))
-    return sum(lpm_variance) / len(lpm_variance)
+    return sum(lpm_variance) / len(lpm_variance) *100
 
 
 def var(ativo):

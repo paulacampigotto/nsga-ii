@@ -141,10 +141,53 @@ def grafico_tempo_barras(carteiras_semestre, lista_ativos_proximo_semestre, list
 
 
 def grafico_risco_retorno(x, y, nome):
-    plt.scatter(x, y, marker='*', color='#ff66c7')
+
+
+
+    if(nome == 'paretoFinalCVaR'):
+        plt.scatter(x, y, marker='*', color='#cccccc')
+        
+    if(nome == 'paretoFinalVaR'):
+        plt.scatter(x, y, marker='.', color='#808080')
+    if(nome == 'paretoFinalEWMA'):
+        plt.scatter(x, y, marker=6, color='#999999')
+    if(nome == 'paretoFinalGARCH'):
+        plt.scatter(x, y, marker='p', color='#666666')
+    if(nome == 'paretoFinalLPM'):
+        plt.scatter(x, y, marker='X', color='#808080')
+    
+
+    
     plt.axis([min(x), max(x), min(y), max(y)])
     plt.xlabel('Risco')
     plt.ylabel('Retorno')
     plt.title(nome)
     plt.savefig("graficos/" + nome + '.png')
+    plt.show()
+
+def novos_pontos(lista):
+    l = []
+    for i in lista:
+        l.append((i - min(lista))/max(lista)-min(lista))
+    return l
+
+def grafico_iteracoes(lista):
+
+    lista1 = novos_pontos(lista[0])
+    lista2 = novos_pontos(lista[1])
+    lista3 =novos_pontos(lista[2])
+    lista4 =novos_pontos(lista[3])
+    lista5 = novos_pontos(lista[4])
+
+    plt.plot(range(len(lista[0])), lista1, linestyle='solid', color='#66ff66', label='CVaR')
+    plt.plot(range(len(lista[1])), lista2, linestyle=(0, (3, 1, 1, 1)), color='#ff66c7', label='VaR')
+    plt.plot(range(len(lista[2])), lista3, linestyle='dashdot', color='#c457ff', label='EWMA')
+    plt.plot(range(len(lista[3])), lista4, linestyle='dashed', color='red', label='GARCH')
+    plt.plot(range(len(lista[4])), lista5, linestyle='dotted', color='#66c2ff', label='LPM')
+
+    plt.legend()
+    plt.xlabel('Iterações')
+    plt.ylabel('Fitness da solução')
+    plt.title("Otimização")
+    plt.savefig('graficos/otimizacao.png')
     plt.show()

@@ -1,16 +1,21 @@
-import itertools
-
+from operadores import *
 from aux import *
-from globais import *
 from grafico import *
+from globais import *
 from metricas import *
 from nsga2 import *
-from operadores import *
-
+from os import listdir
+from os.path import isfile, join
+from pprint import pprint
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+import itertools
+import timeit
+import copy
 
 class Ativo:
     idAtivo = itertools.count()
-
     def __init__(self, codigo, cotacoes):
         self.codigo = codigo
         self.cotacoes = cotacoes
@@ -30,7 +35,7 @@ class Ativo:
 
     def getRisco(self):
         return self.risco
-
+    
     def setRisco(self, risco):
         self.risco = risco
 
@@ -39,32 +44,31 @@ class Ativo:
 
     def setRetorno(self, retorno):
         self.retorno = retorno
-
+    
     def getDividendo(self):
         return self.dividendo
 
     def setDividendo(self, dividendo):
-        self.dividendo = dividendo
-
+        self.dividendo = dividendo 
 
 class Carteira:
     idCarteira = itertools.count()
 
     def __init__(self, ativos):
-        self.ativos = ativos.copy()  # ativos = (Ativo, proporção)
+        self.ativos = ativos.copy() # ativos = (Ativo, proporção)
         self.risco = self.defineRisco()
         self.retorno = self.defineRetorno()
         self.dividendo = self.defineDividendo()
         self.id = next(Carteira.idCarteira)
-        self.contador_n = 0  # contador_n utilizado no nds()
+        self.contador_n = 0 # contador_n utilizado no nds()
         self.rank = 0
         self.dist_crowd = 0
         self.rank = 0
-        self.dominadas = []  # lista s de carteiras dominadas no nds()
+        self.dominadas = [] # lista s de carteiras dominadas no nds()
 
     def getDominadas(self):
         return self.dominadas
-
+    
     def setDominadas(self, lista):
         self.dominadas = lista
 
@@ -101,19 +105,19 @@ class Carteira:
     def defineRisco(self):
         r = 0
         for i in self.getAtivos():
-            r += i[0].getRisco() * i[1]  # i[0] = Ativo | [1] = Proporção
+            r += i[0].getRisco() * i[1] # i[0] = Ativo | [1] = Proporção
         return r
 
     def defineRetorno(self):
         r = 0
         for i in self.getAtivos():
-            r += i[0].getRetorno() * i[1]  # i[0] = Ativo | [1] = Proporção
+            r += i[0].getRetorno() * i[1] # i[0] = Ativo | [1] = Proporção
         return r
-
+    
     def defineDividendo(self):
         d = 0
         for i in self.getAtivos():
-            d += i[0].getDividendo() * i[1]
+            d+= i[0].getDividendo() * i[1]
         return d
 
     def getDividendo(self):
@@ -121,7 +125,7 @@ class Carteira:
 
     def getRisco(self):
         return self.risco
-
+    
     def getRetorno(self):
         return self.retorno
 
@@ -133,22 +137,22 @@ class Carteira:
 
     def printCarteira(self):
         for i in self.ativos:
-            print(i[0].getCodigo(), round(i[1], 4))
+            print(i[0].getCodigo(), round(i[1],4))
 
     def fitness(self):
-        return self.retorno / self.risco
+        return self.retorno/self.risco
 
     def getIndexPeloAtivo(self, ativo):
         j = 0
         for i in self.getAtivos():
-            if (i == ativo):
+            if(i == ativo):
                 return j
-            j += 1
+            j+=1
 
-    def getAtivoPeloIndex(self, index):
+    def getAtivoPeloIndex(self,index):
         return self.ativos[index]
 
-    def setAtivoPeloIndex(self, index, ativo):
+    def setAtivoPeloIndex(self,index, ativo):
         self.ativos[index] = ativo
 
     def cardinalidade(self):

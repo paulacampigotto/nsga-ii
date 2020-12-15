@@ -1,13 +1,18 @@
-import math
-import random
-
-import matplotlib.pyplot as plt
-from classes import *
 from globais import *
-from grafico import *
-from metricas import *
 from nsga2 import *
+from grafico import *
 from operadores import *
+from metricas import *
+from classes import *
+from os.path import isfile, join
+from os import listdir
+from pprint import pprint
+import matplotlib.pyplot as plt
+import numpy as np
+import itertools
+import random
+import timeit
+import math
 
 
 def ativo_aux(carteira):

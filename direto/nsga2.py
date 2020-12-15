@@ -25,11 +25,13 @@ def main():
     pontos_x = []
     pontos_y = []
     solucao_final = []
+    lista_fitness = []
 
     # pontos = [cvar, var, ewma, garch, lpm]
 
     for risco in range(QUANTIDADE_METRICAS):
 
+        lista_fitness.append([])
         lista_ativos = aux.le_arquivo_retorna_lista_ativos(datas[0], datas[1], False)
         lista_ativos_metrica = metricas.metrica_risco(lista_ativos, risco)
 
@@ -43,19 +45,14 @@ def main():
         # EXECUÇÕES
         for j in range(EXECUCOES):
 
+            
+
             x_iteracao = []
             y_iteracao = []
 
             # INICIALIZAÇÃO
             populacao = operadores.populacao_inicial(lista_ativos_metrica)
             pop_filtrada = operadores.filtragem(populacao, True)
-
-            # GRAFICO INICIAL
-            x1 = []
-            y1 = []
-            for carteira in pop_filtrada:
-                x1.append(carteira.getRisco())
-                y1.append(carteira.getRetorno())
 
             # ITERAÇÕES
             cont = 0
@@ -67,6 +64,7 @@ def main():
                 solucao_parcial = aux.melhor_carteira(pop_filtrada)
                 if solucao_final[risco] == None or solucao_parcial.fitness() > solucao_final[risco].fitness():
                     solucao_final[risco] = solucao_parcial
+                lista_fitness[risco].append(solucao_final[risco].fitness())
 
             # GRAFICO FINAL DA ITERAÇÃO
             for carteira in pop_filtrada:
@@ -113,6 +111,9 @@ def main():
 
     for i in range(len(pontos_x)):
         grafico.grafico_risco_retorno(pontos_x[i], pontos_y[i], pareto_dos_riscos[i])
+
+    grafico.grafico_iteracoes(lista_fitness)
+
 
 
 if __name__ == "__main__":
